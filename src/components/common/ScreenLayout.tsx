@@ -11,7 +11,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface ScreenLayoutProps {
   children: React.ReactNode;
@@ -26,11 +26,22 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   scrollable = true,
   contentStyle,
 }) => {
+  const { colors } = useTheme();
+
   const innerContent = (
     <>
       {onBack && (
-        <TouchableOpacity style={styles.backBtn} onPress={onBack}>
-          <Text style={styles.backBtnText}>← Back</Text>
+        <TouchableOpacity
+          style={[
+            styles.backBtn,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+          ]}
+          onPress={onBack}
+        >
+          <Text style={[styles.backBtnText, { color: colors.text }]}>→ رجوع</Text>
         </TouchableOpacity>
       )}
       {children}
@@ -38,7 +49,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
   );
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -52,7 +63,9 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
             {innerContent}
           </ScrollView>
         ) : (
-          <View style={[styles.staticContent, contentStyle]}>{innerContent}</View>
+          <View style={[styles.staticContent, contentStyle]}>
+            {innerContent}
+          </View>
         )}
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -60,7 +73,7 @@ export const ScreenLayout: React.FC<ScreenLayoutProps> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
+  container: { flex: 1 },
   flex: { flex: 1 },
   scrollContent: {
     flexGrow: 1,
@@ -70,16 +83,18 @@ const styles = StyleSheet.create({
   staticContent: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingVertical: 24,
   },
   backBtn: {
-    alignSelf: 'flex-start',
+    alignSelf: 'flex-end',
     marginBottom: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   backBtnText: {
-    color: COLORS.textSecondary,
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: '700',
   },
 });

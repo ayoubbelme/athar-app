@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  ActivityIndicator,
   Alert,
   FlatList,
   RefreshControl,
@@ -11,30 +10,34 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { volunteerHomeApi } from '../../api/volunteer-home.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { ApplicationStatus } from '../../types/volunteer-home.types';
 import { VolunteerApplicationItem } from '../../types/requests.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
+import { ThemePalette } from '../../theme/colors';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
-import { RequestStatusCard } from '../../components/requests/RequestStatusCard';
 import { RequestsListSkeleton } from '../../components/common/AppSkeleton';
+import { AppVectorIcon } from '../../components/common/AppVectorIcon';
+import { RequestStatusCard } from '../../components/requests/RequestStatusCard';
 
 const STATUS_FILTERS: Array<{
   label: string;
   value: ApplicationStatus | 'ALL';
-  icon: string;
 }> = [
-  { label: 'الكل', value: 'ALL', icon: '📋' },
-  { label: 'قيد المراجعة', value: 'PENDING', icon: '⏳' },
-  { label: 'مقبول', value: 'ACCEPTED', icon: '✅' },
-  { label: 'مكتمل', value: 'COMPLETED', icon: '🌟' },
-  { label: 'مرفوض', value: 'REJECTED', icon: '❌' },
-  { label: 'ملغى', value: 'WITHDRAWN', icon: '↩️' },
+  { label: 'الكل', value: 'ALL' },
+  { label: 'قيد المراجعة', value: 'PENDING' },
+  { label: 'مقبول', value: 'ACCEPTED' },
+  { label: 'مكتمل وموثّق', value: 'COMPLETED' },
+  { label: 'مرفوض', value: 'REJECTED' },
+  { label: 'ملغى', value: 'WITHDRAWN' },
 ];
 
 export const RequestsContainer: React.FC = () => {
+  const navigation = useNavigation<any>();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const [applications, setApplications] = useState<VolunteerApplicationItem[]>(
     [],
   );
@@ -97,38 +100,100 @@ export const RequestsContainer: React.FC = () => {
     );
   };
 
-  const filteredApplications = (applications ?? []).filter((app) => {
-    if (!app) return false;
-    if (filterStatus === 'ALL') return true;
-    return app.status === filterStatus;
-  });
+  const counts = useMemo(() => {
+    const safe = applications ?? [];
+    return {
+      ALL: safe.length,
+      PENDING: safe.filter((a) => a?.status === 'PENDING').length,
+      ACCEPTED: safe.filter((a) => a?.status === 'ACCEPTED').length,
+      COMPLETED: safe.filter((a) => a?.status === 'COMPLETED').length,
+      REJECTED: safe.filter((a) => a?.status === 'REJECTED').length,
+      WITHDRAWN: safe.filter((a) => a?.status === 'WITHDRAWN').length,
+    };
+  }, [applications]);
+
+  const filteredApplications = useMemo(
+    () =>
+      (applications ?? []).filter((app) => {
+        if (!app) return false;
+        if (filterStatus === 'ALL') return true;
+        return app.status === filterStatus;
+      }),
+    [applications, filterStatus],
+  );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerAccent} />
-        <View style={styles.headerContent}>
-          <View style={styles.headerIconWrap}>
-            <Text style={styles.headerIcon}>📋</Text>
-          </View>
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.title}>طلبات التطوع</Text>
-            <Text style={styles.subtitle}>
-              تابع حالة طلباتك والساعات المعتمدة بعد إتمام مهامك
-            </Text>
-          </View>
+      {/* Top Summary Header Card */}
+      <View style={styles.topSection}>
+        <View style={styles.headerTextCol}>
+          <Text style={styles.title}>سجل طلبات التطوع والأثر</Text>
+          <Text style={styles.subtitle}>
+            تابع مراحل قبولك في الفرص التطوعية وشهادات الساعات المعتمدة من الجمعيات
+          </Text>
         </View>
-        {filteredApplications.length > 0 && (
-          <View style={styles.countBadge}>
-            <Text style={styles.countBadgeText}>{filteredApplications.length}</Text>
-          </View>
-        )}
+
+        {/* 4-Metric KPI Strip */}
+        <View style={styles.kpiRow}>
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              filterStatus === 'ALL' && styles.kpiCardActive,
+            ]}
+            onPress={() => setFilterStatus('ALL')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.kpiValue}>{counts.ALL}</Text>
+            <Text style={styles.kpiLabel}>إجمالي الطلبات</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              filterStatus === 'PENDING' && styles.kpiCardPending,
+            ]}
+            onPress={() => setFilterStatus('PENDING')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: '#F59E0B' }]}>
+              {counts.PENDING}
+            </Text>
+            <Text style={styles.kpiLabel}>قيد المراجعة</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              filterStatus === 'ACCEPTED' && styles.kpiCardActive,
+            ]}
+            onPress={() => setFilterStatus('ACCEPTED')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: colors.primary }]}>
+              {counts.ACCEPTED}
+            </Text>
+            <Text style={styles.kpiLabel}>تم القبول</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              filterStatus === 'COMPLETED' && styles.kpiCardCompleted,
+            ]}
+            onPress={() => setFilterStatus('COMPLETED')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: '#38BDF8' }]}>
+              {counts.COMPLETED}
+            </Text>
+            <Text style={styles.kpiLabel}>مهام مكتملة</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      {/* Filter Chips */}
+      {/* Horizontal Filter Chips with Counts */}
       <View style={styles.filterRowContainer}>
         <FlatList
           horizontal
@@ -138,6 +203,7 @@ export const RequestsContainer: React.FC = () => {
           keyExtractor={(item) => item.value}
           renderItem={({ item }) => {
             const isSelected = filterStatus === item.value;
+            const countVal = counts[item.value] ?? 0;
             return (
               <TouchableOpacity
                 style={[
@@ -145,9 +211,8 @@ export const RequestsContainer: React.FC = () => {
                   isSelected && styles.filterChipActive,
                 ]}
                 onPress={() => setFilterStatus(item.value)}
-                activeOpacity={0.75}
+                activeOpacity={0.85}
               >
-                <Text style={styles.filterChipIcon}>{item.icon}</Text>
                 <Text
                   style={[
                     styles.filterChipText,
@@ -156,6 +221,21 @@ export const RequestsContainer: React.FC = () => {
                 >
                   {item.label}
                 </Text>
+                <View
+                  style={[
+                    styles.filterCountBadge,
+                    isSelected && styles.filterCountBadgeActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterCountText,
+                      isSelected && styles.filterCountTextActive,
+                    ]}
+                  >
+                    {countVal}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           }}
@@ -167,8 +247,8 @@ export const RequestsContainer: React.FC = () => {
       </View>
 
       {loading ? (
-  <RequestsListSkeleton />
-) : (
+        <RequestsListSkeleton />
+      ) : (
         <FlatList
           data={filteredApplications}
           keyExtractor={(item) => item.id}
@@ -184,17 +264,40 @@ export const RequestsContainer: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchApplications(true)}
-              tintColor={COLORS.primary}
-              colors={[COLORS.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyIcon}>🗂️</Text>
-              <Text style={styles.emptyTitle}>لا توجد طلبات حالياً</Text>
-              <Text style={styles.emptySubtitle}>
-                تصفح الفرص التطوعية وقدم على المشاريع المناسبة لمهاراتك.
+              <View style={styles.emptyIconCircle}>
+                <AppVectorIcon
+                  name="target"
+                  size={24}
+                  color={colors.primary}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>
+                لا توجد طلبات تطوع في هذا التصنيف
               </Text>
+              <Text style={styles.emptySubtitle}>
+                استكشف الفرص التطوعية المتاحة وقدّم على المبادرات التي تناسب
+                مهاراتك واهتماماتك.
+              </Text>
+              <TouchableOpacity
+                style={styles.exploreBtn}
+                onPress={() => navigation.navigate('ChancesTab')}
+                activeOpacity={0.85}
+              >
+                <AppVectorIcon
+                  name="search"
+                  size={15}
+                  color={colors.white}
+                />
+                <Text style={styles.exploreBtnText}>
+                  تصفح الفرص التطوعية المتاحة
+                </Text>
+              </TouchableOpacity>
             </View>
           }
         />
@@ -203,143 +306,176 @@ export const RequestsContainer: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background },
-
-  // ── Header ──────────────────────────────────────────────────────────────
-  header: {
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  topSection: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    marginBottom: 4,
-    position: 'relative',
-  },
-  headerAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: COLORS.primary,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-    opacity: 0.9,
-  },
-  headerContent: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
+    paddingTop: 14,
+    paddingBottom: 12,
     gap: 14,
   },
-  headerIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0, 186, 102, 0.13)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(0, 186, 102, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
+  headerTextCol: {
+    alignItems: 'flex-end',
+    gap: 3,
   },
-  headerIcon: { fontSize: 22 },
-  headerTextBlock: { flex: 1, alignItems: 'flex-end', gap: 3 },
   title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 21,
+    fontWeight: '900',
+    color: colors.text,
     textAlign: 'right',
-    letterSpacing: 0.2,
+    writingDirection: 'rtl',
   },
   subtitle: {
     fontSize: 12.5,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 18,
   },
-  countBadge: {
-    position: 'absolute',
-    bottom: 14,
-    left: 20,
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 3,
-    minWidth: 28,
+  kpiRow: {
+    flexDirection: 'row-reverse',
+    gap: 8,
+  },
+  kpiCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
     alignItems: 'center',
+    gap: 2,
   },
-  countBadgeText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: COLORS.background,
+  kpiCardActive: {
+    borderColor: colors.primary,
+    backgroundColor: 'rgba(0, 186, 102, 0.1)',
   },
-
-  // ── Filter chips ─────────────────────────────────────────────────────────
-  filterRowContainer: { marginBottom: 8 },
+  kpiCardPending: {
+    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  kpiCardCompleted: {
+    borderColor: '#38BDF8',
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+  },
+  kpiValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  kpiLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  filterRowContainer: {
+    marginBottom: 10,
+  },
   filterScroll: {
     flexDirection: 'row-reverse',
     paddingHorizontal: 20,
-    paddingVertical: 10,
     gap: 8,
   },
   filterChip: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: COLORS.surface,
+    gap: 6,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 13,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 22,
+    borderRadius: 20,
   },
   filterChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  filterChipIcon: { fontSize: 12 },
   filterChipText: {
     fontSize: 12.5,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  filterChipTextActive: { color: COLORS.background },
-
-  // ── Misc ─────────────────────────────────────────────────────────────────
-  errorWrapper: { paddingHorizontal: 20 },
-  loaderBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  loaderText: { fontSize: 13, color: COLORS.textSecondary },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 4,
-    paddingBottom: 36,
-    gap: 12,
-  },
-
-  // ── Empty state ───────────────────────────────────────────────────────────
-  emptyBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    padding: 32,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-    marginTop: 32,
-    marginHorizontal: 4,
-    gap: 10,
-  },
-  emptyIcon: { fontSize: 40 },
-  emptyTitle: {
-    fontSize: 16,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.textSecondary,
+  },
+  filterChipTextActive: {
+    color: colors.background,
+  },
+  filterCountBadge: {
+    backgroundColor: colors.surfaceLight,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  filterCountBadgeActive: {
+    backgroundColor: 'rgba(11, 19, 16, 0.22)',
+  },
+  filterCountText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  filterCountTextActive: {
+    color: colors.background,
+  },
+  errorWrapper: {
+    paddingHorizontal: 20,
+  },
+  listContent: {
+    paddingHorizontal: 20,
+    paddingTop: 4,
+    paddingBottom: 32,
+    gap: 14,
+  },
+  emptyBox: {
+    backgroundColor: colors.surface,
+    borderRadius: 20,
+    padding: 26,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    marginTop: 20,
+    gap: 8,
+  },
+  emptyIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(0, 186, 102, 0.12)',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 16.5,
+    fontWeight: '900',
+    color: colors.text,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  exploreBtn: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 8,
+  },
+  exploreBtnText: {
+    color: colors.background,
+    fontSize: 13.5,
+    fontWeight: '900',
   },
 });

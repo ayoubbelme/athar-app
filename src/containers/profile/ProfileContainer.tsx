@@ -1,10 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   StatusBar,
-  StyleSheet,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +11,7 @@ import { useAuth } from '../../context/AuthContext';
 import { profileApi } from '../../api/profile.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { UserProfileStats } from '../../types/profile.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { ProfileHeaderCard } from '../../components/profile/ProfileHeaderCard';
 import { UserSkillsSection } from '../../components/profile/UserSkillsSection';
@@ -21,6 +19,7 @@ import { ProfileActionCards } from '../../components/profile/ProfileActionCards'
 import { ProfileScreenSkeleton } from '../../components/common/AppSkeleton';
 
 export const ProfileContainer: React.FC = () => {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { user, signOut } = useAuth();
   const [stats, setStats] = useState<UserProfileStats>({
@@ -68,16 +67,24 @@ export const ProfileContainer: React.FC = () => {
     ];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView
+      style={{ flex: 1, backgroundColor: colors.background }}
+      edges={['top', 'left', 'right']}
+    >
       <StatusBar barStyle="light-content" />
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{
+          flexGrow: 1,
+          paddingHorizontal: 20,
+          paddingTop: 18,
+          paddingBottom: 36,
+        }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadProfileData(true)}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
@@ -86,7 +93,7 @@ export const ProfileContainer: React.FC = () => {
        {loading ? (
   <ProfileScreenSkeleton />
 ) : (
-          <View style={styles.stack}>
+          <View style={{ gap: 24 }}>
             {/* 1. Header Profile & Score Card */}
             <ProfileHeaderCard
               userName={user.name ?? 'متطوع'}
@@ -113,24 +120,3 @@ export const ProfileContainer: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  scrollContent: {
-    flexGrow: 1,
-    paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 36,
-  },
-  loaderBox: {
-    paddingVertical: 100,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stack: {
-    gap: 24,
-  },
-});

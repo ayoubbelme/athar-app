@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { RecommendedProject } from '../../types/volunteer-home.types';
 import { translateCategory } from '../../utils/arabic.util';
 import { MatchDonutChart } from '../common/MatchDonutChart';
@@ -25,18 +25,20 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
   onPressDetails,
   applyingId,
 }) => {
+  const { colors } = useTheme();
+
   if (!item) {
     return (
       <View style={styles.section}>
         <View style={styles.sectionHeaderRow}>
-          <Text style={styles.sectionTitle}>أفضل فرصة تناسب مهاراتك</Text>
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>أفضل فرصة تناسب مهاراتك</Text>
         </View>
-        <View style={styles.emptyCard}>
-          <View style={styles.emptyIconCircle}>
-            <AppVectorIcon name="target" size={22} color={COLORS.primary} />
+        <View style={[styles.emptyCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.emptyIconCircle, { borderColor: colors.primary }]}>
+            <AppVectorIcon name="target" size={22} color={colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>لا توجد فرص مطابقة متاحة حالياً</Text>
-          <Text style={styles.emptySub}>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>لا توجد فرص مطابقة متاحة حالياً</Text>
+          <Text style={[styles.emptySub, { color: colors.textSecondary }]}>
             لقد قمت بالتقديم على جميع المشاريع المتاحة أو سيتم نشر فرص تطوعية
             جديدة قريباً.
           </Text>
@@ -64,18 +66,18 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
       {/* Section Header */}
       <View style={styles.sectionHeaderRow}>
         <View style={styles.titleWithAccent}>
-          <View style={styles.accentBar} />
-          <Text style={styles.sectionTitle}>أفضل فرصة تناسب مهاراتك</Text>
+          <View style={[styles.accentBar, { backgroundColor: colors.primary }]} />
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>أفضل فرصة تناسب مهاراتك</Text>
         </View>
 
         <View style={styles.topBadge}>
-          <View style={styles.liveDot} />
-          <Text style={styles.topBadgeText}>الأعلى توافقاً</Text>
+          <View style={[styles.liveDot, { backgroundColor: colors.primary }]} />
+          <Text style={[styles.topBadgeText, { color: colors.primary }]}>الأعلى توافقاً</Text>
         </View>
       </View>
 
       {/* Main Featured Hero Card */}
-      <View style={styles.heroCard}>
+      <View style={[styles.heroCard, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
         {/* Subtle Decorative Background Glow */}
         <View style={styles.ambientGlow} />
 
@@ -84,18 +86,18 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
           <View style={styles.rightCol}>
             {/* Organization Pill + Category Tag */}
             <View style={styles.orgAndCategoryRow}>
-              <View style={styles.orgBadge}>
-                <View style={styles.orgAvatarMini}>
-                  <Text style={styles.orgAvatarMiniText}>{orgInitial}</Text>
+              <View style={[styles.orgBadge, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+                <View style={[styles.orgAvatarMini, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.orgAvatarMiniText, { color: colors.background }]}>{orgInitial}</Text>
                 </View>
-                <Text style={styles.orgName} numberOfLines={1}>
+                <Text style={[styles.orgName, { color: colors.text }]} numberOfLines={1}>
                   {orgName}
                 </Text>
               </View>
 
               {project.category && (
                 <View style={styles.categoryPill}>
-                  <Text style={styles.categoryTag}>
+                  <Text style={[styles.categoryTag, { color: colors.primary }]}>
                     {translateCategory(project.category)}
                   </Text>
                 </View>
@@ -103,7 +105,7 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
             </View>
 
             {/* Project Title */}
-            <Text style={styles.projectTitle} numberOfLines={2}>
+            <Text style={[styles.projectTitle, { color: colors.text }]} numberOfLines={2}>
               {project.title}
             </Text>
           </View>
@@ -120,48 +122,48 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
         </View>
 
         {/* Description Box */}
-        <Text style={styles.shortDescription} numberOfLines={2}>
+        <Text style={[styles.shortDescription, { color: colors.textSecondary }]} numberOfLines={2}>
           {project.description}
         </Text>
 
         {/* Info & Matched Skills Chips */}
         <View style={styles.metaAndSkillsRow}>
-          <View style={styles.metaChip}>
-            <AppVectorIcon name="location" size={13} color={COLORS.primary} />
-            <Text style={styles.metaChipText}>
+          <View style={[styles.metaChip, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+            <AppVectorIcon name="location" size={13} color={colors.primary} />
+            <Text style={[styles.metaChipText, { color: colors.text }]}>
               {project.location ? project.location : 'عن بُعد / مرن'}
             </Text>
           </View>
 
           {matchedSkills.slice(0, 3).map((s) => (
             <View key={s.skillId} style={styles.skillPill}>
-              <AppVectorIcon name="check" size={11} color={COLORS.primary} />
-              <Text style={styles.skillPillText}>{s.name}</Text>
+              <AppVectorIcon name="check" size={11} color={colors.primary} />
+              <Text style={[styles.skillPillText, { color: colors.primary }]}>{s.name}</Text>
             </View>
           ))}
         </View>
 
         {/* Volunteer Seats Progress Bar (if maxVolunteers is set) */}
         {capacityRatio !== null && (
-          <View style={styles.capacityBox}>
+          <View style={[styles.capacityBox, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
             <View style={styles.capacityHeaderRow}>
               <View style={styles.capacityLabelRow}>
                 <AppVectorIcon
                   name="users"
                   size={13}
-                  color={COLORS.textSecondary}
+                  color={colors.textSecondary}
                 />
-                <Text style={styles.capacityLabel}>المقاعد المحجوزة</Text>
+                <Text style={[styles.capacityLabel, { color: colors.textSecondary }]}>المقاعد المحجوزة</Text>
               </View>
-              <Text style={styles.capacityCountText}>
+              <Text style={[styles.capacityCountText, { color: colors.primary }]}>
                 {accepted} من {max} متطوع
               </Text>
             </View>
-            <View style={styles.progressTrack}>
+            <View style={[styles.progressTrack, { backgroundColor: colors.background }]}>
               <View
                 style={[
                   styles.progressFill,
-                  { width: `${Math.max(8, Math.round(capacityRatio * 100))}%` },
+                  { backgroundColor: colors.primary, width: `${Math.max(8, Math.round(capacityRatio * 100))}%` },
                 ]}
               />
             </View>
@@ -169,33 +171,33 @@ export const BestSkillChanceCard: React.FC<BestSkillChanceCardProps> = ({
         )}
 
         {/* Dual Action Footer: Primary Apply + Secondary Details */}
-        <View style={styles.actionsRow}>
+        <View style={[styles.actionsRow, { borderTopColor: colors.border }]}>
           <TouchableOpacity
-            style={[styles.applyBtn, isApplying && styles.applyBtnDisabled]}
+            style={[styles.applyBtn, { backgroundColor: colors.primary }, isApplying && styles.applyBtnDisabled]}
             onPress={() => onApply(project.id)}
             disabled={isApplying}
             activeOpacity={0.85}
           >
             {isApplying ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
               <View style={styles.btnInnerRow}>
-                <Text style={styles.applyBtnText}>تقديم سريع الآن</Text>
+                <Text style={[styles.applyBtnText, { color: colors.background }]}>تقديم سريع الآن</Text>
                 <AppVectorIcon
                   name="arrow-left"
                   size={14}
-                  color={COLORS.background}
+                  color={colors.background}
                 />
               </View>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.detailsBtn}
+            style={[styles.detailsBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}
             onPress={() => onPressDetails(item)}
             activeOpacity={0.85}
           >
-            <Text style={styles.detailsBtnText}>التفاصيل</Text>
+            <Text style={[styles.detailsBtnText, { color: colors.text }]}>التفاصيل</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -222,12 +224,10 @@ const styles = StyleSheet.create({
     width: 4,
     height: 18,
     borderRadius: 2,
-    backgroundColor: COLORS.primary,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -246,21 +246,17 @@ const styles = StyleSheet.create({
     width: 6.5,
     height: 6.5,
     borderRadius: 3.5,
-    backgroundColor: COLORS.primary,
   },
   topBadgeText: {
-    color: COLORS.primary,
     fontSize: 11.5,
     fontWeight: '800',
   },
   heroCard: {
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: COLORS.surface,
     borderRadius: 22,
     padding: 18,
     borderWidth: 1.5,
-    borderColor: COLORS.primary,
     gap: 12,
   },
   ambientGlow: {
@@ -293,31 +289,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: COLORS.surfaceLight,
     paddingRight: 5,
     paddingLeft: 10,
     paddingVertical: 4,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   orgAvatarMini: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   orgAvatarMiniText: {
     fontSize: 11,
     fontWeight: '900',
-    color: COLORS.background,
   },
   orgName: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     maxWidth: 145,
   },
@@ -330,12 +321,10 @@ const styles = StyleSheet.create({
   categoryTag: {
     fontSize: 11,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   projectTitle: {
     fontSize: 18.5,
     fontWeight: '900',
-    color: COLORS.text,
     lineHeight: 25,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -345,7 +334,6 @@ const styles = StyleSheet.create({
   },
   shortDescription: {
     fontSize: 13.5,
-    color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -359,16 +347,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   metaChipText: {
     fontSize: 12,
-    color: COLORS.text,
     fontWeight: '700',
     writingDirection: 'rtl',
   },
@@ -384,18 +369,15 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   skillPillText: {
-    color: COLORS.primary,
     fontSize: 11.5,
     fontWeight: '800',
   },
   capacityBox: {
-    backgroundColor: COLORS.surfaceLight,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 9,
     gap: 6,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   capacityHeaderRow: {
     flexDirection: 'row-reverse',
@@ -410,24 +392,20 @@ const styles = StyleSheet.create({
   capacityLabel: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
   },
   capacityCountText: {
     fontSize: 11.5,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   progressTrack: {
     width: '100%',
     height: 5,
-    backgroundColor: COLORS.background,
     borderRadius: 3,
     overflow: 'hidden',
     flexDirection: 'row-reverse',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: COLORS.primary,
     borderRadius: 3,
   },
   actionsRow: {
@@ -436,11 +414,9 @@ const styles = StyleSheet.create({
     marginTop: 2,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   applyBtn: {
     flex: 1.5,
-    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
@@ -455,31 +431,25 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   applyBtnText: {
-    color: COLORS.background,
     fontSize: 14.5,
     fontWeight: '900',
   },
   detailsBtn: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 14,
     paddingVertical: 13,
     alignItems: 'center',
     justifyContent: 'center',
   },
   detailsBtnText: {
-    color: COLORS.text,
     fontSize: 13.5,
     fontWeight: '800',
   },
   emptyCard: {
-    backgroundColor: COLORS.surface,
     borderRadius: 20,
     padding: 22,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 8,
     alignItems: 'center',
   },
@@ -489,7 +459,6 @@ const styles = StyleSheet.create({
     borderRadius: 23,
     backgroundColor: 'rgba(0, 186, 102, 0.12)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 2,
@@ -497,12 +466,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'center',
   },
   emptySub: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'center',
   },

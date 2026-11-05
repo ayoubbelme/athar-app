@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { SelfRegistrationRole } from '../../types/auth.types';
 
 interface RoleTabsProps {
@@ -11,33 +11,45 @@ interface RoleTabsProps {
 export const RoleTabs: React.FC<RoleTabsProps> = ({
   selectedRole,
   onChangeRole,
-}) => (
-  <View style={styles.tabsContainer}>
-    {(['VOLUNTEER', 'ORGANIZATION'] as SelfRegistrationRole[]).map((item) => {
-      const isActive = selectedRole === item;
-      return (
-        <TouchableOpacity
-          key={item}
-          style={[styles.tab, isActive && styles.tabActive]}
-          onPress={() => onChangeRole(item)}
-        >
-          <Text style={[styles.tabText, isActive && styles.tabTextActive]}>
-            {item === 'VOLUNTEER' ? 'Volunteer' : 'Organization'}
-          </Text>
-        </TouchableOpacity>
-      );
-    })}
-  </View>
-);
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View
+      style={[
+        styles.tabsContainer,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
+      {(['VOLUNTEER', 'ORGANIZATION'] as SelfRegistrationRole[]).map((item) => {
+        const isActive = selectedRole === item;
+        return (
+          <TouchableOpacity
+            key={item}
+            style={[styles.tab, isActive && { backgroundColor: colors.primary }]}
+            onPress={() => onChangeRole(item)}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                { color: colors.textSecondary },
+                isActive && { color: colors.background },
+              ]}
+            >
+              {item === 'VOLUNTEER' ? 'حساب متطوع' : 'حساب جمعية / منظمة'}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   tabsContainer: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface,
+    flexDirection: 'row-reverse',
     borderRadius: 14,
     padding: 4,
     borderWidth: 1,
-    borderColor: COLORS.border,
     marginBottom: 22,
   },
   tab: {
@@ -46,11 +58,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  tabActive: { backgroundColor: COLORS.primary },
   tabText: {
     fontSize: 14,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    fontWeight: '800',
   },
-  tabTextActive: { color: COLORS.background },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface MatchDonutChartProps {
   score: number;
@@ -15,12 +15,13 @@ export const MatchDonutChart: React.FC<MatchDonutChartProps> = ({
   strokeWidth = 6,
   label = 'توافق',
 }) => {
+  const { colors } = useTheme();
   const clamped = Math.max(0, Math.min(100, Math.round(score || 0)));
   const half = size / 2;
 
   const activeColor =
     clamped >= 70
-      ? COLORS.primary
+      ? colors.primary
       : clamped >= 40
       ? '#FFC107'
       : '#38BDF8';
@@ -41,6 +42,7 @@ export const MatchDonutChart: React.FC<MatchDonutChartProps> = ({
             height: size,
             borderRadius: half,
             borderWidth: strokeWidth,
+            borderColor: colors.surfaceLight,
           },
         ]}
       />
@@ -107,7 +109,7 @@ export const MatchDonutChart: React.FC<MatchDonutChartProps> = ({
           <Text
             style={[
               styles.labelText,
-              { fontSize: Math.max(8.5, size * 0.16) },
+              { fontSize: Math.max(8.5, size * 0.16), color: colors.textSecondary },
             ]}
           >
             {label}
@@ -126,7 +128,6 @@ const styles = StyleSheet.create({
   },
   trackRing: {
     position: 'absolute',
-    borderColor: COLORS.surfaceLight,
   },
   halfClip: {
     position: 'absolute',
@@ -147,7 +148,6 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   labelText: {
-    color: COLORS.textSecondary,
     fontWeight: '700',
     marginTop: -1,
     includeFontPadding: false,

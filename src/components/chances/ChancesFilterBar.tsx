@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ProjectCategory } from '../../types/volunteer-home.types';
 import { SkillOption } from '../../types/chances.types';
 import { translateCategory } from '../../utils/arabic.util';
@@ -40,106 +40,154 @@ export const ChancesFilterBar: React.FC<ChancesFilterBarProps> = ({
   onSelectSkill,
   onlyOpenStatus,
   onToggleOnlyOpen,
-}) => (
-  <View style={styles.container}>
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipsScroll}
+}) => {
+  const { colors } = useTheme();
+
+  return (
+    <View
+      style={[styles.container, { borderBottomColor: colors.border }]}
     >
-      <TouchableOpacity
-        style={[styles.chip, !selectedCategory && styles.chipActive]}
-        onPress={() => onSelectCategory(null)}
-      >
-        <Text
-          style={[styles.chipText, !selectedCategory && styles.chipTextActive]}
-        >
-          الكل
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.chip, onlyOpenStatus && styles.chipStatusActive]}
-        onPress={onToggleOnlyOpen}
-      >
-        <Text
-          style={[
-            styles.chipText,
-            onlyOpenStatus && styles.chipStatusTextActive,
-          ]}
-        >
-          {onlyOpenStatus ? '✓ متاح للتقديم فقط' : 'متاح للتقديم فقط'}
-        </Text>
-      </TouchableOpacity>
-
-      {ALL_PROJECT_CATEGORIES.map((cat) => {
-        const isSelected = selectedCategory === cat;
-        return (
-          <TouchableOpacity
-            key={cat}
-            style={[styles.chip, isSelected && styles.chipActive]}
-            onPress={() => onSelectCategory(isSelected ? null : cat)}
-          >
-            <Text
-              style={[styles.chipText, isSelected && styles.chipTextActive]}
-            >
-              {translateCategory(cat)}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </ScrollView>
-
-    {skills.length > 0 && (
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.chipsScroll}
       >
         <TouchableOpacity
-          style={[styles.skillChip, !selectedSkillId && styles.skillChipActive]}
-          onPress={() => onSelectSkill(null)}
+          style={[
+            styles.chip,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            !selectedCategory && {
+              backgroundColor: colors.primary,
+              borderColor: colors.primary,
+            },
+          ]}
+          onPress={() => onSelectCategory(null)}
         >
           <Text
             style={[
-              styles.skillChipText,
-              !selectedSkillId && styles.skillChipTextActive,
+              styles.chipText,
+              { color: colors.textSecondary },
+              !selectedCategory && { color: colors.background },
             ]}
           >
-            جميع المهارات
+            الكل
           </Text>
         </TouchableOpacity>
 
-        {skills.map((skill) => {
-          const isSelected = selectedSkillId === skill.id;
+        <TouchableOpacity
+          style={[
+            styles.chip,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+            onlyOpenStatus && {
+              backgroundColor: 'rgba(0, 186, 102, 0.16)',
+              borderColor: colors.primary,
+            },
+          ]}
+          onPress={onToggleOnlyOpen}
+        >
+          <Text
+            style={[
+              styles.chipText,
+              { color: colors.textSecondary },
+              onlyOpenStatus && { color: colors.primary },
+            ]}
+          >
+            {onlyOpenStatus ? '✓ متاح للتقديم فقط' : 'متاح للتقديم فقط'}
+          </Text>
+        </TouchableOpacity>
+
+        {ALL_PROJECT_CATEGORIES.map((cat) => {
+          const isSelected = selectedCategory === cat;
           return (
             <TouchableOpacity
-              key={skill.id}
-              style={[styles.skillChip, isSelected && styles.skillChipActive]}
-              onPress={() => onSelectSkill(isSelected ? null : skill.id)}
+              key={cat}
+              style={[
+                styles.chip,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                isSelected && {
+                  backgroundColor: colors.primary,
+                  borderColor: colors.primary,
+                },
+              ]}
+              onPress={() => onSelectCategory(isSelected ? null : cat)}
             >
               <Text
                 style={[
-                  styles.skillChipText,
-                  isSelected && styles.skillChipTextActive,
+                  styles.chipText,
+                  { color: colors.textSecondary },
+                  isSelected && { color: colors.background },
                 ]}
               >
-                {skill.name}
+                {translateCategory(cat)}
               </Text>
             </TouchableOpacity>
           );
         })}
       </ScrollView>
-    )}
-  </View>
-);
+
+      {skills.length > 0 && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.chipsScroll}
+        >
+          <TouchableOpacity
+            style={[
+              styles.skillChip,
+              { backgroundColor: colors.surfaceLight, borderColor: colors.border },
+              !selectedSkillId && { borderColor: colors.primary },
+            ]}
+            onPress={() => onSelectSkill(null)}
+          >
+            <Text
+              style={[
+                styles.skillChipText,
+                { color: colors.textSecondary },
+                !selectedSkillId && { color: colors.primary, fontWeight: '800' },
+              ]}
+            >
+              جميع المهارات
+            </Text>
+          </TouchableOpacity>
+
+          {skills.map((skill) => {
+            const isSelected = selectedSkillId === skill.id;
+            return (
+              <TouchableOpacity
+                key={skill.id}
+                style={[
+                  styles.skillChip,
+                  { backgroundColor: colors.surfaceLight, borderColor: colors.border },
+                  isSelected && {
+                    borderColor: colors.primary,
+                    backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                  },
+                ]}
+                onPress={() => onSelectSkill(isSelected ? null : skill.id)}
+              >
+                <Text
+                  style={[
+                    styles.skillChipText,
+                    { color: colors.textSecondary },
+                    isSelected && { color: colors.primary, fontWeight: '800' },
+                  ]}
+                >
+                  {skill.name}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 10,
     gap: 8,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
   chipsScroll: {
     flexDirection: 'row-reverse',
@@ -147,40 +195,20 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
-  chipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  chipStatusActive: {
-    backgroundColor: 'rgba(0, 186, 102, 0.16)',
-    borderColor: COLORS.primary,
-  },
-  chipText: { fontSize: 13, fontWeight: '700', color: COLORS.textSecondary },
-  chipTextActive: { color: COLORS.background },
-  chipStatusTextActive: { color: COLORS.primary },
+  chipText: { fontSize: 13, fontWeight: '700' },
   skillChip: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
   },
-  skillChipActive: {
-    borderColor: COLORS.primary,
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
-  },
   skillChipText: {
     fontSize: 12,
     fontWeight: '600',
-    color: COLORS.textSecondary,
   },
-  skillChipTextActive: { color: COLORS.primary, fontWeight: '800' },
 });

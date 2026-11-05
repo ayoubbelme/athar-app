@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -21,23 +21,27 @@ import { organizationApi } from '../../api/organization.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { ApplicationStatus } from '../../types/volunteer-home.types';
 import { OrganizationApplicationItem } from '../../types/organization.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
+import { ThemePalette } from '../../theme/colors';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { RequestsListSkeleton } from '../../components/common/AppSkeleton';
+import { AppVectorIcon } from '../../components/common/AppVectorIcon';
 import { OrgApplicantCard } from '../../components/organization/OrgApplicantCard';
 
 const STATUS_FILTERS: Array<{
   label: string;
   value: ApplicationStatus | 'ALL';
-  icon: string;
 }> = [
-  { label: 'الكل', value: 'ALL', icon: '📋' },
-  { label: 'بانتظار المراجعة', value: 'PENDING', icon: '⏳' },
-  { label: 'المقبولون', value: 'ACCEPTED', icon: '✅' },
-  { label: 'المكتملون', value: 'COMPLETED', icon: '🌟' },
-  { label: 'المرفوضون', value: 'REJECTED', icon: '❌' },
+  { label: 'الكل', value: 'ALL' },
+  { label: 'بانتظار المراجعة', value: 'PENDING' },
+  { label: 'المقبولون', value: 'ACCEPTED' },
+  { label: 'المكتملون', value: 'COMPLETED' },
+  { label: 'المرفوضون', value: 'REJECTED' },
 ];
 
 export const OrgRequestsContainer: React.FC = () => {
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
   const route = useRoute<any>();
   const filterProjectId: string | undefined = route.params?.projectId;
   const filterProjectTitle: string | undefined = route.params?.projectTitle;
@@ -122,7 +126,7 @@ export const OrgRequestsContainer: React.FC = () => {
                 ),
               );
               Alert.alert(
-                isAccept ? 'تم القبول بنجاح ✅' : 'تم تحديث الحالة',
+                isAccept ? 'تم القبول بنجاح' : 'تم تحديث الحالة',
                 isAccept
                   ? 'تم قبول المتطوع وإضافته إلى فريق المشروع.'
                   : 'تم تحديث حالة الطلب إلى مرفوض.',
@@ -211,7 +215,7 @@ export const OrgRequestsContainer: React.FC = () => {
 
       setCompleteModalVisible(false);
       Alert.alert(
-        'تم اعتماد إنجاز المهمة والأثر 🏆',
+        'تم اعتماد إنجاز المهمة والأثر',
         `تم منح المتطوع ${parsedHours} ساعة تطوعية وتحديث نقاط أثره بنجاح.`,
       );
     } catch (err) {
@@ -221,40 +225,61 @@ export const OrgRequestsContainer: React.FC = () => {
     }
   };
 
-  const filteredRequests = requests.filter((req) => {
-    if (!req) return false;
-    if (
-      selectedProjectFilter &&
-      req.project?.id !== selectedProjectFilter
-    ) {
-      return false;
-    }
-    if (statusFilter !== 'ALL' && req.status !== statusFilter) {
-      return false;
-    }
-    return true;
-  });
+  const projectScopedRequests = useMemo(
+    () =>
+      (requests ?? []).filter((req) => {
+        if (!req) return false;
+        if (
+          selectedProjectFilter &&
+          req.project?.id !== selectedProjectFilter
+        ) {
+          return false;
+        }
+        return true;
+      }),
+    [requests, selectedProjectFilter],
+  );
+
+  const counts = useMemo(() => {
+    return {
+      ALL: projectScopedRequests.length,
+      PENDING: projectScopedRequests.filter((r) => r.status === 'PENDING')
+        .length,
+      ACCEPTED: projectScopedRequests.filter((r) => r.status === 'ACCEPTED')
+        .length,
+      COMPLETED: projectScopedRequests.filter((r) => r.status === 'COMPLETED')
+        .length,
+      REJECTED: projectScopedRequests.filter((r) => r.status === 'REJECTED')
+        .length,
+      WITHDRAWN: projectScopedRequests.filter((r) => r.status === 'WITHDRAWN')
+        .length,
+    };
+  }, [projectScopedRequests]);
+
+  const filteredRequests = useMemo(
+    () =>
+      projectScopedRequests.filter((req) => {
+        if (statusFilter !== 'ALL' && req.status !== statusFilter) {
+          return false;
+        }
+        return true;
+      }),
+    [projectScopedRequests, statusFilter],
+  );
 
   const targetVolunteerName =
     targetApp?.volunteer?.name ?? targetApp?.user?.name ?? 'المتطوع';
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
+      {/* Top Summary Section */}
       <View style={styles.header}>
-        <View style={styles.headerAccent} />
-        <View style={styles.headerContent}>
-          <View style={styles.headerIconWrap}>
-            <Text style={styles.headerIcon}>🏛</Text>
-          </View>
-          <View style={styles.headerTextBlock}>
-            <Text style={styles.title}>طلبات المتطوعين</Text>
-            <Text style={styles.subtitle}>
-              اقبل المتطوعين وحدّد الساعات والأثر المعتمد لكل منهم
-            </Text>
-          </View>
-        </View>
+        <Text style={styles.title}>إدارة المتقدمين واعتماد الأثر</Text>
+        <Text style={styles.subtitle}>
+          اقبل المتطوعين، وعند إتمام مهامهم حدّد الساعات والأثر المعتمد لكل متطوع
+        </Text>
 
         {selectedProjectFilter && (
           <View style={styles.projectFilterBanner}>
@@ -262,13 +287,71 @@ export const OrgRequestsContainer: React.FC = () => {
               onPress={() => setSelectedProjectFilter(null)}
               style={styles.clearProjectFilterBtn}
             >
-              <Text style={styles.clearProjectFilterText}>✕ عرض الكل</Text>
+              <AppVectorIcon name="close" size={12} color={colors.text} />
+              <Text style={styles.clearProjectFilterText}>عرض الكل</Text>
             </TouchableOpacity>
             <Text style={styles.projectFilterText} numberOfLines={1}>
-              📌 {filterProjectTitle ?? 'مشروع محدد'}
+              تصفية حسب: {filterProjectTitle ?? 'مشروع محدد'}
             </Text>
           </View>
         )}
+
+        {/* 4-Card KPI Summary Row */}
+        <View style={styles.kpiRow}>
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              statusFilter === 'ALL' && styles.kpiCardActive,
+            ]}
+            onPress={() => setStatusFilter('ALL')}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.kpiValue}>{counts.ALL}</Text>
+            <Text style={styles.kpiLabel}>الكل</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              statusFilter === 'PENDING' && styles.kpiCardPending,
+            ]}
+            onPress={() => setStatusFilter('PENDING')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: '#F59E0B' }]}>
+              {counts.PENDING}
+            </Text>
+            <Text style={styles.kpiLabel}>بانتظار القرار</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              statusFilter === 'ACCEPTED' && styles.kpiCardActive,
+            ]}
+            onPress={() => setStatusFilter('ACCEPTED')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: colors.primary }]}>
+              {counts.ACCEPTED}
+            </Text>
+            <Text style={styles.kpiLabel}>مقبولون</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.kpiCard,
+              statusFilter === 'COMPLETED' && styles.kpiCardCompleted,
+            ]}
+            onPress={() => setStatusFilter('COMPLETED')}
+            activeOpacity={0.85}
+          >
+            <Text style={[styles.kpiValue, { color: '#38BDF8' }]}>
+              {counts.COMPLETED}
+            </Text>
+            <Text style={styles.kpiLabel}>مكتملون</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Status Filter Chips */}
@@ -281,6 +364,7 @@ export const OrgRequestsContainer: React.FC = () => {
           keyExtractor={(item) => item.value}
           renderItem={({ item }) => {
             const isSelected = statusFilter === item.value;
+            const countVal = counts[item.value] ?? 0;
             return (
               <TouchableOpacity
                 style={[
@@ -288,9 +372,7 @@ export const OrgRequestsContainer: React.FC = () => {
                   isSelected && styles.filterChipActive,
                 ]}
                 onPress={() => setStatusFilter(item.value)}
-                activeOpacity={0.75}
               >
-                <Text style={styles.filterChipIcon}>{item.icon}</Text>
                 <Text
                   style={[
                     styles.filterChipText,
@@ -299,6 +381,21 @@ export const OrgRequestsContainer: React.FC = () => {
                 >
                   {item.label}
                 </Text>
+                <View
+                  style={[
+                    styles.filterCountBadge,
+                    isSelected && styles.filterCountBadgeActive,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.filterCountText,
+                      isSelected && styles.filterCountTextActive,
+                    ]}
+                  >
+                    {countVal}
+                  </Text>
+                </View>
               </TouchableOpacity>
             );
           }}
@@ -310,10 +407,7 @@ export const OrgRequestsContainer: React.FC = () => {
       </View>
 
       {loading ? (
-        <View style={styles.loaderBox}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-          <Text style={styles.loaderText}>جارٍ تحميل الطلبات...</Text>
-        </View>
+        <RequestsListSkeleton />
       ) : (
         <FlatList
           data={filteredRequests}
@@ -331,18 +425,21 @@ export const OrgRequestsContainer: React.FC = () => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchIncomingRequests(true)}
-              tintColor={COLORS.primary}
-              colors={[COLORS.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
             <View style={styles.emptyBox}>
-              <Text style={styles.emptyIcon}>📭</Text>
+              <View style={styles.emptyIconCircle}>
+                <AppVectorIcon name="users" size={24} color={colors.primary} />
+              </View>
               <Text style={styles.emptyTitle}>
-                لا توجد طلبات مطابقة حالياً
+                لا توجد طلبات متطوعين في هذا التصنيف
               </Text>
               <Text style={styles.emptySubtitle}>
-                ستظهر هنا طلبات المتطوعين فور تقديمهم على الفرص التي تنشرها جمعيتك.
+                ستظهر هنا طلبات المتطوعين فور تقديمهم على الفرص التي تنشرها
+                جمعيتك.
               </Text>
             </View>
           }
@@ -366,11 +463,19 @@ export const OrgRequestsContainer: React.FC = () => {
                 style={styles.closeBtn}
                 onPress={() => setCompleteModalVisible(false)}
               >
-                <Text style={styles.closeBtnText}>إغلاق ✕</Text>
+                <AppVectorIcon
+                  name="close"
+                  size={13}
+                  color={colors.textSecondary}
+                />
+                <Text style={styles.closeBtnText}>إغلاق</Text>
               </TouchableOpacity>
-              <Text style={styles.modalTitle}>
-                اعتماد إتمام المهمة والأثر 🏆
-              </Text>
+              <View style={styles.modalTitleRow}>
+                <AppVectorIcon name="trophy" size={18} color={colors.primary} />
+                <Text style={styles.modalTitle}>
+                  اعتماد إتمام المهمة والأثر
+                </Text>
+              </View>
             </View>
 
             <ScrollView
@@ -380,16 +485,16 @@ export const OrgRequestsContainer: React.FC = () => {
               {targetApp && (
                 <View style={styles.volunteerSummaryBanner}>
                   <Text style={styles.volunteerSummaryName}>
-                    👤 المتطوع: {targetVolunteerName}
+                    المتطوع: {targetVolunteerName}
                   </Text>
                   <Text style={styles.volunteerSummaryProject}>
-                    📌 الفرصة: {targetApp.project?.title}
+                    الفرصة: {targetApp.project?.title}
                   </Text>
                 </View>
               )}
 
               <Text style={styles.inputLabel}>
-                ⏱️ عدد الساعات المعتمدة للمتطوع *
+                عدد الساعات المعتمدة للمتطوع *
               </Text>
               <TextInput
                 style={styles.input}
@@ -397,59 +502,59 @@ export const OrgRequestsContainer: React.FC = () => {
                 onChangeText={setHoursInput}
                 keyboardType="decimal-pad"
                 placeholder="مثال: 6"
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 textAlign="right"
               />
 
               <View style={styles.rowInputs}>
                 <View style={styles.halfInputCol}>
-                  <Text style={styles.inputLabel}>⚡ الأنشطة المنجزة</Text>
+                  <Text style={styles.inputLabel}>الأنشطة المنجزة</Text>
                   <TextInput
                     style={styles.input}
                     value={activitiesInput}
                     onChangeText={setActivitiesInput}
                     keyboardType="number-pad"
                     placeholder="1"
-                    placeholderTextColor={COLORS.textSecondary}
+                    placeholderTextColor={colors.textSecondary}
                     textAlign="right"
                   />
                 </View>
 
                 <View style={styles.halfInputCol}>
-                  <Text style={styles.inputLabel}>👥 عدد المستفيدين</Text>
+                  <Text style={styles.inputLabel}>عدد المستفيدين</Text>
                   <TextInput
                     style={styles.input}
                     value={beneficiariesInput}
                     onChangeText={setBeneficiariesInput}
                     keyboardType="number-pad"
                     placeholder="15"
-                    placeholderTextColor={COLORS.textSecondary}
+                    placeholderTextColor={colors.textSecondary}
                     textAlign="right"
                   />
                 </View>
               </View>
 
               <Text style={styles.inputLabel}>
-                🧰 الموارد المستخدمة (اختياري)
+                الموارد المستخدمة (اختياري)
               </Text>
               <TextInput
                 style={styles.input}
                 value={resourcesInput}
                 onChangeText={setResourcesInput}
                 placeholder="مثال: معدات طبية، مطويات توعوية..."
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 textAlign="right"
               />
 
               <Text style={styles.inputLabel}>
-                📝 ملاحظات الجمعية وتوثيق الأثر (اختياري)
+                ملاحظات الجمعية وتوثيق الأثر (اختياري)
               </Text>
               <TextInput
                 style={[styles.input, styles.textArea]}
                 value={descriptionInput}
                 onChangeText={setDescriptionInput}
                 placeholder="تقييم أداء المتطوع والنتائج التي ساهم في تحقيقها..."
-                placeholderTextColor={COLORS.textSecondary}
+                placeholderTextColor={colors.textSecondary}
                 multiline
                 numberOfLines={3}
                 textAlignVertical="top"
@@ -466,11 +571,18 @@ export const OrgRequestsContainer: React.FC = () => {
                 activeOpacity={0.85}
               >
                 {submittingCompletion ? (
-                  <ActivityIndicator color={COLORS.background} size="small" />
+                  <ActivityIndicator color={colors.white} size="small" />
                 ) : (
-                  <Text style={styles.confirmImpactBtnText}>
-                    تأكيد الإنجاز واعتماد الساعات للمتطوع ✅
-                  </Text>
+                  <View style={styles.confirmBtnInner}>
+                    <AppVectorIcon
+                      name="check"
+                      size={15}
+                      color={colors.white}
+                    />
+                    <Text style={styles.confirmImpactBtnText}>
+                      تأكيد الإنجاز واعتماد الساعات للمتطوع
+                    </Text>
+                  </View>
                 )}
               </TouchableOpacity>
             </ScrollView>
@@ -481,72 +593,39 @@ export const OrgRequestsContainer: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
-
-  // ── Header ──────────────────────────────────────────────────────────────
   header: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    marginBottom: 4,
-    position: 'relative',
-    gap: 10,
+    paddingTop: 14,
+    paddingBottom: 12,
+    alignItems: 'flex-end',
+    gap: 8,
   },
-  headerAccent: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 3,
-    backgroundColor: COLORS.primary,
-    borderBottomLeftRadius: 2,
-    borderBottomRightRadius: 2,
-    opacity: 0.9,
-  },
-  headerContent: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 14,
-  },
-  headerIconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    backgroundColor: 'rgba(0, 186, 102, 0.13)',
-    borderWidth: 1.5,
-    borderColor: 'rgba(0, 186, 102, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerIcon: { fontSize: 22 },
-  headerTextBlock: { flex: 1, alignItems: 'flex-end', gap: 3 },
   title: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 21,
+    fontWeight: '900',
+    color: colors.text,
     textAlign: 'right',
-    letterSpacing: 0.2,
+    writingDirection: 'rtl',
   },
   subtitle: {
     fontSize: 12.5,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
-    lineHeight: 18,
   },
   projectFilterBanner: {
+    width: '100%',
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 186, 102, 0.12)',
+    backgroundColor: 'rgba(0, 186, 102, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -555,104 +634,163 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12.5,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: colors.primary,
     textAlign: 'right',
   },
   clearProjectFilterBtn: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 4,
     paddingHorizontal: 8,
     paddingVertical: 2,
-    backgroundColor: COLORS.surfaceLight,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   clearProjectFilterText: {
     fontSize: 12,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
   },
-
-  // ── Filter chips ─────────────────────────────────────────────────────────
-  filterRowContainer: { marginBottom: 8 },
+  kpiRow: {
+    width: '100%',
+    flexDirection: 'row-reverse',
+    gap: 8,
+    marginTop: 4,
+  },
+  kpiCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 6,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    gap: 2,
+  },
+  kpiCardActive: {
+    borderColor: colors.primary,
+    backgroundColor: 'rgba(0, 186, 102, 0.1)',
+  },
+  kpiCardPending: {
+    borderColor: '#F59E0B',
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+  },
+  kpiCardCompleted: {
+    borderColor: '#38BDF8',
+    backgroundColor: 'rgba(56, 189, 248, 0.1)',
+  },
+  kpiValue: {
+    fontSize: 18,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  kpiLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  filterRowContainer: {
+    marginBottom: 10,
+  },
   filterScroll: {
     flexDirection: 'row-reverse',
     paddingHorizontal: 20,
-    paddingVertical: 10,
     gap: 8,
   },
   filterChip: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: COLORS.surface,
+    gap: 6,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    paddingHorizontal: 13,
+    borderColor: colors.border,
+    paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 22,
+    borderRadius: 20,
   },
   filterChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
-  filterChipIcon: { fontSize: 12 },
   filterChipText: {
     fontSize: 12.5,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
+    fontWeight: '800',
+    color: colors.textSecondary,
   },
-  filterChipTextActive: { color: COLORS.background },
-
-  // ── Misc ─────────────────────────────────────────────────────────────────
-  errorWrapper: { paddingHorizontal: 20 },
-  loaderBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  loaderText: { fontSize: 13, color: COLORS.textSecondary },
+  filterChipTextActive: {
+    color: colors.background,
+  },
+  filterCountBadge: {
+    backgroundColor: colors.surfaceLight,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+    borderRadius: 10,
+  },
+  filterCountBadgeActive: {
+    backgroundColor: 'rgba(11, 19, 16, 0.22)',
+  },
+  filterCountText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: colors.text,
+  },
+  filterCountTextActive: {
+    color: colors.background,
+  },
+  errorWrapper: {
+    paddingHorizontal: 20,
+  },
   listContent: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingTop: 4,
-    paddingBottom: 36,
-    gap: 12,
+    paddingBottom: 32,
+    gap: 14,
   },
-
-  // ── Empty state ───────────────────────────────────────────────────────────
   emptyBox: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 20,
-    padding: 32,
+    padding: 26,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     alignItems: 'center',
-    marginTop: 32,
-    marginHorizontal: 4,
-    gap: 10,
+    marginTop: 20,
+    gap: 8,
   },
-  emptyIcon: { fontSize: 40 },
+  emptyIconCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: 'rgba(0, 186, 102, 0.12)',
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
   emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
-
-  // ── Modal ─────────────────────────────────────────────────────────────────
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    backgroundColor: 'rgba(0, 0, 0, 0.72)',
     justifyContent: 'flex-end',
   },
   modalSheet: {
     maxHeight: '88%',
-    backgroundColor: COLORS.surface,
-    borderTopLeftRadius: 26,
-    borderTopRightRadius: 26,
-    borderTopWidth: 2,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    
+    borderColor: colors.primary,
     paddingTop: 16,
   },
   modalHeader: {
@@ -662,25 +800,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: colors.border,
+  },
+  modalTitleRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
   },
   modalTitle: {
-    fontSize: 17,
+    fontSize: 17.5,
     fontWeight: '900',
-    color: COLORS.text,
+    color: colors.text,
   },
   closeBtn: {
-    backgroundColor: COLORS.surfaceLight,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: colors.surfaceLight,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
   },
   closeBtnText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   modalBody: {
     padding: 20,
@@ -688,43 +834,43 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
   },
   volunteerSummaryBanner: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderRadius: 14,
-    padding: 14,
+    padding: 12,
     alignItems: 'flex-end',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    gap: 5,
+    borderColor: colors.primary,
+    gap: 4,
   },
   volunteerSummaryName: {
     fontSize: 15,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: colors.primary,
     textAlign: 'right',
   },
   volunteerSummaryProject: {
     fontSize: 12.5,
-    color: COLORS.text,
+    color: colors.text,
     fontWeight: '600',
     textAlign: 'right',
   },
   inputLabel: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   input: {
     width: '100%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 11,
     fontSize: 14,
-    color: COLORS.text,
+    color: colors.text,
     writingDirection: 'rtl',
   },
   textArea: {
@@ -739,15 +885,20 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   confirmImpactBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 8,
   },
+  confirmBtnInner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+  },
   confirmImpactBtnText: {
-    color: COLORS.background,
+    color: colors.background,
     fontSize: 15,
     fontWeight: '900',
   },

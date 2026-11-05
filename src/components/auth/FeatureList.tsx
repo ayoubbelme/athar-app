@@ -1,63 +1,90 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
+import { AppVectorIcon, VectorIconName } from '../common/AppVectorIcon';
 
-const FEATURES = [
+const FEATURES: Array<{
+  title: string;
+  subtitle: string;
+  icon: VectorIconName;
+}> = [
   {
-    title: 'Skill-Based Smart Matching',
+    title: 'مطابقة ذكية حسب المهارات والولاية',
     subtitle:
-      'Get matched with causes that fit your skills, location, and availability.',
+      'نرشح لك الفرص التطوعية الأكثر توافقاً مع خبراتك، موقعك الجغرافي، وأوقات تفرغك.',
+    icon: 'target',
   },
   {
-    title: 'Verified Community Impact',
+    title: 'توثيق معتمد للساعات والأثر المجتمعي',
     subtitle:
-      'Track volunteer hours, beneficiaries reached, and real local outcomes.',
+      'احصل على نقاط أثر وساعات تطوع معتمدة من الجمعيات ونافس في لوحة الصدارة.',
+    icon: 'trophy',
   },
 ];
 
-export const FeatureList: React.FC = () => (
-  <View style={styles.list}>
-    {FEATURES.map((item) => (
-      <View key={item.title} style={styles.card}>
-        <View style={styles.dot} />
-        <View style={styles.textWrapper}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.subtitle}>{item.subtitle}</Text>
+export const FeatureList: React.FC = () => {
+  const { colors, isDark } = useTheme();
+  return (
+    <View style={styles.list}>
+      {FEATURES.map((item) => (
+        <View
+          key={item.title}
+          style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}
+        >
+          <View
+            style={[
+              styles.iconBox,
+              {
+                backgroundColor: isDark ? 'rgba(0,186,102,0.14)' : 'rgba(5,150,105,0.14)',
+                borderColor: colors.primary,
+              },
+            ]}
+          >
+            <AppVectorIcon name={item.icon} size={18} color={colors.primary} />
+          </View>
+          <View style={styles.textWrapper}>
+            <Text style={[styles.title, { color: colors.text }]}>{item.title}</Text>
+            <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{item.subtitle}</Text>
+          </View>
         </View>
-      </View>
-    ))}
-  </View>
-);
+      ))}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  list: { gap: 14 },
+  list: { gap: 12 },
   card: {
-    flexDirection: 'row',
-    backgroundColor: COLORS.surface,
+    flexDirection: 'row-reverse',
     borderRadius: 16,
-    padding: 18,
+    padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    gap: 14,
   },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: COLORS.primary,
-    marginTop: 6,
-    marginRight: 14,
+  iconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  textWrapper: { flex: 1 },
+  textWrapper: {
+    flex: 1,
+    alignItems: 'flex-end',
+  },
   title: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: COLORS.text,
+    fontSize: 15.5,
+    fontWeight: '800',
     marginBottom: 4,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   subtitle: {
-    fontSize: 13.5,
-    color: COLORS.textSecondary,
+    fontSize: 13,
     lineHeight: 19,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
 });

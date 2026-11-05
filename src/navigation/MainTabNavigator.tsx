@@ -3,6 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { MainTabParamList } from './types';
 import { HomeScreen } from '../screens/HomeScreen';
 import { ChancesScreen } from '../screens/ChancesScreen';
@@ -11,7 +12,6 @@ import { RequestsScreen } from '../screens/RequestsScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
 import { TabIcon, TabIconType } from '../components/common/TabIcon';
 import { GlobalTopMenuBar } from '../components/common/GlobalTopMenuBar';
-import { COLORS } from '../theme/colors';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
@@ -25,6 +25,7 @@ const TAB_TITLES: Record<string, string> = {
 
 export const MainTabNavigator: React.FC = () => {
   const { user } = useAuth();
+  const { colors } = useTheme();
   const isOrganization = user?.role === 'ORGANIZATION';
 
   const insets = useSafeAreaInsets();
@@ -42,8 +43,8 @@ export const MainTabNavigator: React.FC = () => {
         ),
         tabBarShowLabel: false,
         tabBarStyle: {
-          backgroundColor: COLORS.surface,
-          borderTopColor: COLORS.border,
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
           borderTopWidth: 1,
           height: 60 + bottomInset,
           paddingBottom: bottomInset,
@@ -67,7 +68,11 @@ export const MainTabNavigator: React.FC = () => {
             <View
               style={[
                 styles.iconContainer,
-                focused && styles.iconContainerActive,
+                focused && {
+                  backgroundColor: 'rgba(0, 186, 102, 0.16)',
+                  borderWidth: 1.5,
+                  borderColor: colors.primary,
+                },
               ]}
             >
               <TabIcon type={iconType} focused={focused} />
@@ -104,10 +109,5 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  iconContainerActive: {
-    backgroundColor: 'rgba(0, 186, 102, 0.16)',
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
   },
 });

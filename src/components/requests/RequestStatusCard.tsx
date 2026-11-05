@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { VolunteerApplicationItem } from '../../types/requests.types';
 import { translateApplicationStatus } from '../../utils/status.util';
 import { translateStatus } from '../../utils/arabic.util';
@@ -34,6 +34,7 @@ export const RequestStatusCard: React.FC<RequestStatusCardProps> = ({
   onWithdraw,
   withdrawingId,
 }) => {
+  const { colors } = useTheme();
   const {
     id,
     status,
@@ -51,16 +52,42 @@ export const RequestStatusCard: React.FC<RequestStatusCardProps> = ({
   const isRejected = status === 'REJECTED';
   const isWithdrawn = status === 'WITHDRAWN';
 
+  const orgName = project?.organization?.name ?? 'جمعية معتمدة';
+  const orgInitial = orgName.trim().charAt(0).toUpperCase() || 'ج';
   const formattedDate = formatIsoDate(createdAt);
 
+  // Step progress calculation (1 = Applied, 2 = Accepted, 3 = Completed & Verified)
+  const step2Reached = isAccepted || isCompleted;
+  const step3Reached = isCompleted;
+
+  const accentColor = isCompleted
+    ? '#38BDF8'
+    : isAccepted
+    ? colors.primary
+    : isPending
+    ? '#F59E0B'
+    : isRejected
+    ? colors.error
+    : colors.border;
+
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, isCompleted && styles.cardCompleted]}>
+      {/* Right Side Status Accent Strip */}
+      <View style={[styles.statusStrip, { backgroundColor: accentColor }]} />
+
+      {/* Top Row: Organization Pill + Status Badge + Title on Right, Match Donut on Left */}
       <View style={styles.headerRow}>
         <View style={styles.titleCol}>
           <View style={styles.orgAndStatusRow}>
-            <Text style={styles.orgName}>
-              {project?.organization?.name ?? 'جمعية'}
-            </Text>
+            <View style={[styles.orgPill, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+              <View style={[styles.orgAvatarMini, { backgroundColor: colors.primary }]}>
+                <Text style={[styles.orgAvatarMiniText, { color: colors.background }]}>{orgInitial}</Text>
+              </View>
+              <Text style={[styles.orgName, { color: colors.text }]} numberOfLines={1}>
+                {orgName}
+              </Text>
+            </View>
+
             <View
               style={[
                 styles.statusBadge,
@@ -68,136 +95,270 @@ export const RequestStatusCard: React.FC<RequestStatusCardProps> = ({
                 isCompleted && styles.badgeCompleted,
                 isPending && styles.badgePending,
                 isRejected && styles.badgeRejected,
-                isWithdrawn && styles.badgeWithdrawn,
+                isWithdrawn && { backgroundColor: colors.surfaceLight, borderWidth: 1, borderColor: colors.border },
               ]}
             >
+              <View
+                style={[styles.statusDot, { backgroundColor: accentColor }]}
+              />
               <Text
                 style={[
                   styles.statusText,
-                  isAccepted && styles.textAccepted,
+                  isAccepted && { color: colors.primary },
                   isCompleted && styles.textCompleted,
                   isPending && styles.textPending,
-                  isRejected && styles.textRejected,
-                  isWithdrawn && styles.textWithdrawn,
+                  isRejected && { color: colors.error },
+                  isWithdrawn && { color: colors.textSecondary },
                 ]}
               >
                 {translateApplicationStatus(status)}
               </Text>
             </View>
           </View>
-          <Text style={styles.projectTitle}>{project?.title ?? ''}</Text>
+
+          <Text style={[styles.projectTitle, { color: colors.text }]} numberOfLines={2}>
+            {project?.title ?? 'مشروع تطوعي'}
+          </Text>
         </View>
 
         {matchScore !== null && matchScore !== undefined && (
           <MatchDonutChart
             score={matchScore}
-            size={52}
+            size={54}
             strokeWidth={5}
             label="توافق"
           />
         )}
       </View>
 
-      <View style={styles.metaRow}>
-        <View style={styles.metaItem}>
+      {/* 3-Step Visual Progress Tracker (Hidden if Withdrawn) */}
+      {!isWithdrawn && (
+        <View style={[styles.stepperContainer, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+          {/* Step 1: Applied */}
+          <View style={styles.stepCol}>
+            <View style={[styles.stepCircle, { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+              <AppVectorIcon
+                name="check"
+                size={11}
+                color={colors.background}
+              />
+            </View>
+            <Text style={[styles.stepLabelActive, { color: colors.primary }]}>تقديم الطلب</Text>
+          </View>
+
+          {/* Line 1 -> 2 */}
+          <View
+            style={[
+              styles.stepLine,
+              { backgroundColor: colors.border },
+              step2Reached && { backgroundColor: colors.primary },
+              isRejected && { backgroundColor: colors.error },
+            ]}
+          />
+
+          {/* Step 2: Organization Decision */}
+          <View style={styles.stepCol}>
+            <View
+              style={[
+                styles.stepCircle,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                step2Reached && { backgroundColor: colors.primary, borderColor: colors.primary },
+                isRejected && { backgroundColor: colors.error, borderColor: colors.error },
+              ]}
+            >
+              {isRejected ? (
+                <AppVectorIcon
+                  name="close"
+                  size={10}
+                  color={colors.background}
+                />
+              ) : step2Reached ? (
+                <AppVectorIcon
+                  name="check"
+                  size={11}
+                  color={colors.background}
+                />
+              ) : (
+                <View style={[styles.stepInnerDot, { backgroundColor: colors.textSecondary }]} />
+              )}
+            </View>
+            <Text
+              style={[
+                styles.stepLabel,
+                { color: colors.textSecondary },
+                step2Reached && { color: colors.primary, fontWeight: '800' },
+                isRejected && { color: colors.error, fontWeight: '800' },
+              ]}
+            >
+              {isRejected ? 'تم الاعتذار' : 'قبول الجمعية'}
+            </Text>
+          </View>
+
+          {/* Line 2 -> 3 */}
+          <View
+            style={[styles.stepLine, { backgroundColor: colors.border }, step3Reached && styles.stepLineCompleted]}
+          />
+
+          {/* Step 3: Task Completed & Impact Verified */}
+          <View style={styles.stepCol}>
+            <View
+              style={[
+                styles.stepCircle,
+                { backgroundColor: colors.surface, borderColor: colors.border },
+                step3Reached && styles.stepCircleCompleted,
+              ]}
+            >
+              {step3Reached ? (
+                <AppVectorIcon
+                  name="trophy"
+                  size={11}
+                  color={colors.background}
+                />
+              ) : (
+                <View style={[styles.stepInnerDot, { backgroundColor: colors.textSecondary }]} />
+              )}
+            </View>
+            <Text
+              style={[
+                styles.stepLabel,
+                { color: colors.textSecondary },
+                step3Reached && styles.stepLabelCompleted,
+              ]}
+            >
+              توثيق الأثر
+            </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Meta Chips Row */}
+      <View style={styles.metaChipsWrap}>
+        <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <AppVectorIcon
             name="calendar"
-            size={13}
-            color={COLORS.textSecondary}
+            size={12}
+            color={colors.textSecondary}
           />
-          <Text style={styles.metaDate}>تاريخ الطلب: {formattedDate}</Text>
+          <Text style={[styles.metaChipText, { color: colors.textSecondary }]}>{formattedDate}</Text>
         </View>
 
         {project && Boolean(project.location) && (
-          <View style={styles.metaItem}>
+          <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
             <AppVectorIcon
               name="location"
-              size={13}
-              color={COLORS.textSecondary}
+              size={12}
+              color={colors.textSecondary}
             />
-            <Text style={styles.projectLocation}>{project.location}</Text>
+            <Text style={[styles.metaChipText, { color: colors.textSecondary }]}>{project.location}</Text>
+          </View>
+        )}
+
+        {project && (
+          <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <AppVectorIcon
+              name="target"
+              size={12}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.metaChipText, { color: colors.textSecondary }]}>
+              المشروع: {translateStatus(project.status)}
+            </Text>
           </View>
         )}
       </View>
 
+      {/* Motivation Message */}
       {Boolean(message) && (
-        <View style={styles.messageBox}>
-          <Text style={styles.messageLabel}>رسالتك للجمعية:</Text>
-          <Text style={styles.messageText} numberOfLines={2}>
+        <View style={[styles.messageBox, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+          <Text style={[styles.messageLabel, { color: colors.textSecondary }]}>رسالتك المرفقة:</Text>
+          <Text style={[styles.messageText, { color: colors.text }]} numberOfLines={2}>
             "{message}"
           </Text>
         </View>
       )}
 
-      {project && (
-        <View style={styles.projectInfoRow}>
-          <Text style={styles.projectStatusLabel}>
-            حالة المشروع: {translateStatus(project.status)}
-          </Text>
-        </View>
-      )}
-
+      {/* Info Hint when ACCEPTED */}
       {isAccepted && (
         <View style={styles.acceptedHintBox}>
-          <AppVectorIcon name="clock" size={14} color={COLORS.primary} />
-          <Text style={styles.acceptedHintText}>
-            بعد إتمامك للمهمة، ستقوم الجمعية بتأكيد إنجازك واعتماد ساعات تطوعك وأثرك تلقائياً.
+          <AppVectorIcon name="clock" size={14} color={colors.primary} />
+          <Text style={[styles.acceptedHintText, { color: colors.text }]}>
+            أنت ضمن فريق المشروع. بعد إتمام مهامك ستقوم الجمعية باعتماد ساعاتك
+            ونقاط أثرك.
           </Text>
         </View>
       )}
 
+      {/* Verified Impact Certificate Box when COMPLETED */}
       {isCompleted && (
-        <View style={styles.impactSummaryBox}>
-          <View style={styles.impactTitleRow}>
-            <AppVectorIcon name="trophy" size={15} color={COLORS.primary} />
-            <Text style={styles.impactSummaryTitle}>
-              الأثر المعتمد من طرف الجمعية
-            </Text>
+        <View style={[styles.impactCertificateBox, { borderColor: colors.primary }]}>
+          <View style={styles.impactHeaderRow}>
+            <View style={styles.impactTitleCluster}>
+              <View style={[styles.trophyBadge, { backgroundColor: colors.primary }]}>
+                <AppVectorIcon
+                  name="trophy"
+                  size={14}
+                  color={colors.background}
+                />
+              </View>
+              <Text style={[styles.impactSummaryTitle, { color: colors.text }]}>
+                شهادة الأثر المعتمدة من الجمعية
+              </Text>
+            </View>
+            <View style={[styles.verifiedTag, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
+              <AppVectorIcon name="check" size={10} color={colors.primary} />
+              <Text style={[styles.verifiedTagText, { color: colors.primary }]}>موثّق</Text>
+            </View>
           </View>
+
           {volunteerImpact ? (
             <>
-              <View style={styles.impactMetricsRow}>
-                <View style={styles.impactMetricChip}>
-                  <AppVectorIcon name="clock" size={12} color={COLORS.primary} />
-                  <Text style={styles.impactMetricPill}>
-                    {volunteerImpact.hours} ساعة معتمدة
+              <View style={[styles.impactStatsGrid, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.impactStatBox}>
+                  <Text style={[styles.impactStatVal, { color: colors.primary }]}>
+                    {volunteerImpact.hours}
                   </Text>
+                  <Text style={[styles.impactStatLbl, { color: colors.textSecondary }]}>ساعة تطوع</Text>
                 </View>
-                <View style={styles.impactMetricChip}>
-                  <AppVectorIcon name="bolt" size={12} color={COLORS.primary} />
-                  <Text style={styles.impactMetricPill}>
-                    {volunteerImpact.activitiesCount} نشاط
+                <View style={[styles.impactStatDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.impactStatBox}>
+                  <Text style={[styles.impactStatVal, { color: colors.primary }]}>
+                    {volunteerImpact.activitiesCount}
                   </Text>
+                  <Text style={[styles.impactStatLbl, { color: colors.textSecondary }]}>نشاط منجز</Text>
                 </View>
-                <View style={styles.impactMetricChip}>
-                  <AppVectorIcon name="users" size={12} color={COLORS.primary} />
-                  <Text style={styles.impactMetricPill}>
-                    {volunteerImpact.beneficiariesCount} مستفيد
+                <View style={[styles.impactStatDivider, { backgroundColor: colors.border }]} />
+                <View style={styles.impactStatBox}>
+                  <Text style={[styles.impactStatVal, { color: colors.primary }]}>
+                    {volunteerImpact.beneficiariesCount}
                   </Text>
+                  <Text style={[styles.impactStatLbl, { color: colors.textSecondary }]}>مستفيد</Text>
                 </View>
               </View>
+
               {Boolean(volunteerImpact.description) && (
-                <Text style={styles.impactDescText}>
+                <Text style={[styles.impactDescText, { color: colors.textSecondary }]}>
                   تقييم الجمعية: "{volunteerImpact.description}"
                 </Text>
               )}
             </>
           ) : (
-            <Text style={styles.impactDescText}>
-              تم تأكيد إتمام المهمة وإضافة النقاط إلى رصيد أثرك.
+            <Text style={[styles.impactDescText, { color: colors.textSecondary }]}>
+              تم تأكيد إنجاز المهمة بنجاح وإضافة نقاط الأثر إلى رصيدك.
             </Text>
           )}
         </View>
       )}
 
+      {/* Withdraw Action Footer */}
       {(isPending ||
         (isAccepted &&
           (project?.status === 'PUBLISHED' ||
             project?.status === 'IN_PROGRESS'))) && (
-        <View style={styles.footerRow}>
+        <View style={[styles.footerRow, { borderTopColor: colors.border }]}>
           <TouchableOpacity
             style={[
               styles.withdrawBtn,
+              { borderColor: colors.error },
               isWithdrawing && styles.btnDisabled,
             ]}
             onPress={() => onWithdraw(id)}
@@ -205,9 +366,12 @@ export const RequestStatusCard: React.FC<RequestStatusCardProps> = ({
             activeOpacity={0.8}
           >
             {isWithdrawing ? (
-              <ActivityIndicator color={COLORS.error} size="small" />
+              <ActivityIndicator color={colors.error} size="small" />
             ) : (
-              <Text style={styles.withdrawText}>إلغاء الطلب</Text>
+              <View style={styles.withdrawInner}>
+                <AppVectorIcon name="close" size={12} color={colors.error} />
+                <Text style={[styles.withdrawText, { color: colors.error }]}>سحب وإلغاء الطلب</Text>
+              </View>
             )}
           </TouchableOpacity>
         </View>
@@ -218,228 +382,319 @@ export const RequestStatusCard: React.FC<RequestStatusCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 18,
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 20,
     padding: 18,
+    paddingRight: 22,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 12,
+    gap: 14,
+  },
+  cardCompleted: {
+    borderColor: 'rgba(56, 189, 248, 0.45)',
+    borderWidth: 1.5,
+  },
+  statusStrip: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 4.5,
   },
   headerRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'flex-start',
+    gap: 12,
   },
   titleCol: {
     flex: 1,
     alignItems: 'flex-end',
-    gap: 4,
+    gap: 8,
   },
   orgAndStatusRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 8,
     flexWrap: 'wrap',
+    gap: 8,
+  },
+  orgPill: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: 5,
+    paddingLeft: 10,
+    paddingVertical: 3.5,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  orgAvatarMini: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  orgAvatarMiniText: {
+    fontSize: 10.5,
+    fontWeight: '900',
   },
   orgName: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: COLORS.primary,
-    textAlign: 'right',
+    fontSize: 12,
+    fontWeight: '800',
+    maxWidth: 130,
   },
   projectTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 17.5,
+    fontWeight: '900',
     textAlign: 'right',
     writingDirection: 'rtl',
+    lineHeight: 24,
   },
   statusBadge: {
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 8,
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
   badgePending: {
-    backgroundColor: 'rgba(255, 193, 7, 0.16)',
+    backgroundColor: 'rgba(245, 158, 11, 0.14)',
     borderWidth: 1,
-    borderColor: '#FFC107',
+    borderColor: 'rgba(245, 158, 11, 0.45)',
   },
   badgeAccepted: {
-    backgroundColor: 'rgba(0, 186, 102, 0.16)',
+    backgroundColor: 'rgba(0, 186, 102, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: 'rgba(0, 186, 102, 0.45)',
   },
   badgeCompleted: {
-    backgroundColor: 'rgba(56, 189, 248, 0.16)',
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
     borderWidth: 1,
-    borderColor: '#38BDF8',
+    borderColor: 'rgba(56, 189, 248, 0.45)',
   },
   badgeRejected: {
-    backgroundColor: 'rgba(255, 90, 95, 0.16)',
+    backgroundColor: 'rgba(255, 90, 95, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.error,
-  },
-  badgeWithdrawn: {
-    backgroundColor: COLORS.surfaceLight,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(255, 90, 95, 0.45)',
   },
   statusText: {
     fontSize: 11,
     fontWeight: '800',
   },
   textPending: {
-    color: '#FFC107',
-  },
-  textAccepted: {
-    color: COLORS.primary,
+    color: '#F59E0B',
   },
   textCompleted: {
     color: '#38BDF8',
   },
-  textRejected: {
-    color: COLORS.error,
-  },
-  textWithdrawn: {
-    color: COLORS.textSecondary,
-  },
-  metaRow: {
+  stepperContainer: {
     flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 14,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderWidth: 1,
+  },
+  stepCol: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  stepCircle: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  stepCircleCompleted: {
+    backgroundColor: '#38BDF8',
+    borderColor: '#38BDF8',
+  },
+  stepInnerDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  stepLine: {
+    flex: 1,
+    height: 2,
+    marginHorizontal: 6,
+    marginBottom: 14,
+  },
+  stepLineCompleted: {
+    backgroundColor: '#38BDF8',
+  },
+  stepLabel: {
+    fontSize: 10.5,
+    fontWeight: '700',
+  },
+  stepLabelActive: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  stepLabelCompleted: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#38BDF8',
+  },
+  metaChipsWrap: {
+    flexDirection: 'row-reverse',
     flexWrap: 'wrap',
     gap: 8,
   },
-  metaItem: {
+  metaChip: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 9,
+    borderWidth: 1,
   },
-  metaDate: {
-    fontSize: 12.5,
-    color: COLORS.textSecondary,
-    writingDirection: 'rtl',
-  },
-  messageBox: {
-    backgroundColor: COLORS.surfaceLight,
-    borderRadius: 12,
-    padding: 10,
-    gap: 4,
-    alignItems: 'flex-end',
-  },
-  messageLabel: {
+  metaChipText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+  },
+  messageBox: {
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    gap: 3,
+    alignItems: 'flex-end',
+    borderWidth: 1,
+  },
+  messageLabel: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   messageText: {
-    fontSize: 13,
-    color: COLORS.text,
+    fontSize: 12.5,
     fontStyle: 'italic',
     textAlign: 'right',
     writingDirection: 'rtl',
-  },
-  projectInfoRow: {
-    flexDirection: 'row-reverse',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  projectStatusLabel: {
-    fontSize: 12.5,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-  },
-  projectLocation: {
-    fontSize: 12.5,
-    color: COLORS.textSecondary,
   },
   acceptedHintBox: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: COLORS.surfaceLight,
-    borderRadius: 10,
+    backgroundColor: 'rgba(0, 186, 102, 0.08)',
+    borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingVertical: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: 'rgba(0, 186, 102, 0.3)',
   },
   acceptedHintText: {
     flex: 1,
     fontSize: 12,
-    color: COLORS.textSecondary,
+    fontWeight: '600',
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 18,
   },
-  impactSummaryBox: {
+  impactCertificateBox: {
     backgroundColor: 'rgba(0, 186, 102, 0.1)',
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 12,
-    padding: 12,
-    alignItems: 'flex-end',
-    gap: 8,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 14,
+    gap: 10,
   },
-  impactTitleRow: {
+  impactHeaderRow: {
+    flexDirection: 'row-reverse',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  impactTitleCluster: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
+  },
+  trophyBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   impactSummaryTitle: {
-    fontSize: 12.5,
-    fontWeight: '800',
-    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: '900',
   },
-  impactMetricsRow: {
-    flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  impactMetricChip: {
+  verifiedTag: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: COLORS.surface,
+    gap: 4,
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingVertical: 3,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
-  impactMetricPill: {
-    fontSize: 12,
+  verifiedTagText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+  },
+  impactStatsGrid: {
+    flexDirection: 'row-reverse',
+    borderRadius: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  impactStatBox: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 2,
+  },
+  impactStatVal: {
+    fontSize: 16,
+    fontWeight: '900',
+  },
+  impactStatLbl: {
+    fontSize: 10.5,
     fontWeight: '700',
-    color: COLORS.text,
+  },
+  impactStatDivider: {
+    width: 1,
+    height: 24,
   },
   impactDescText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
+    lineHeight: 18,
   },
   footerRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'flex-start',
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   withdrawBtn: {
     backgroundColor: 'rgba(255, 90, 95, 0.1)',
     borderWidth: 1,
-    borderColor: COLORS.error,
     paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderRadius: 10,
+  },
+  withdrawInner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 6,
   },
   btnDisabled: {
     opacity: 0.6,
   },
   withdrawText: {
-    color: COLORS.error,
     fontSize: 12.5,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -31,7 +31,8 @@ import {
   ALGERIA_WILAYAS,
   WilayaOption,
 } from '../../utils/algeria-wilayas.util';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
+import { ThemePalette } from '../../theme/colors';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 // 👇 Imported here
 import { WilayaDropdownPicker } from '../../components/organization/WilayaDropdownPicker';
@@ -98,6 +99,8 @@ function getFutureDateIso(daysAhead: number): string {
 
 export const PostChanceContainer: React.FC = () => {
   const navigation = useNavigation<any>();
+  const { colors, isDark } = useTheme();
+  const styles = useMemo(() => createStyles(colors), [colors]);
 
   // 1. Basic Info
   const [title, setTitle] = useState('');
@@ -432,7 +435,7 @@ export const PostChanceContainer: React.FC = () => {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
       <KeyboardAvoidingView
         style={styles.flex}
@@ -474,7 +477,7 @@ export const PostChanceContainer: React.FC = () => {
             <TextInput
               style={styles.input}
               placeholder="مثال: تنظيم قافلة طبية وتوعوية بولاية البليدة"
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={title}
               onChangeText={setTitle}
               textAlign="right"
@@ -484,7 +487,7 @@ export const PostChanceContainer: React.FC = () => {
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="اشرح أهداف المبادرة، المهام اليومية للمتطوعين، والفئة المستهدفة..."
-              placeholderTextColor={COLORS.textSecondary}
+              placeholderTextColor={colors.textSecondary}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -583,7 +586,7 @@ export const PostChanceContainer: React.FC = () => {
                 <TextInput
                   style={styles.customCatInput}
                   placeholder="اكتب مجالاً أو تصنيفاً آخر (مثال: الإغاثة العاجلة)..."
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   value={customCategoryDraft}
                   onChangeText={setCustomCategoryDraft}
                   onSubmitEditing={handleAddCustomCategory}
@@ -790,7 +793,7 @@ export const PostChanceContainer: React.FC = () => {
                 <TextInput
                   style={styles.dateInput}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   value={startDate}
                   onChangeText={(t) => {
                     setSelectedDurationPreset('CUSTOM');
@@ -805,7 +808,7 @@ export const PostChanceContainer: React.FC = () => {
                 <TextInput
                   style={styles.dateInput}
                   placeholder="YYYY-MM-DD"
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   value={endDate}
                   onChangeText={(t) => {
                     setSelectedDurationPreset('CUSTOM');
@@ -1016,7 +1019,7 @@ export const PostChanceContainer: React.FC = () => {
                 <TextInput
                   style={styles.customCatInput}
                   placeholder="اكتب مهارة أخرى مطلوبة (مثال: التصوير الفوتوغرافي، الإسعافات الأولية)..."
-                  placeholderTextColor={COLORS.textSecondary}
+                  placeholderTextColor={colors.textSecondary}
                   value={customSkillDraft}
                   onChangeText={setCustomSkillDraft}
                   onSubmitEditing={handleAddCustomSkill}
@@ -1138,9 +1141,9 @@ export const PostChanceContainer: React.FC = () => {
             activeOpacity={0.85}
           >
             {submitting ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={styles.submitBtnText}>
+              <Text style={[styles.submitBtnText, { color: colors.background }]}>
                 {publishStatus === 'PUBLISHED'
                   ? 'نشر الفرصة التطوعية الآن ✨'
                   : 'حفظ الفرصة كمسودة 📁'}
@@ -1153,10 +1156,10 @@ export const PostChanceContainer: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const createStyles = (colors: ThemePalette) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: colors.background,
   },
   flex: {
     flex: 1,
@@ -1167,9 +1170,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: colors.border,
     gap: 12,
   },
   topTitleCol: {
@@ -1180,26 +1183,26 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 19,
     fontWeight: '900',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   headerSub: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   resetTopBtn: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 10,
   },
   resetTopBtnText: {
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -1210,11 +1213,11 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   formCard: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     gap: 12,
     alignItems: 'flex-end',
   },
@@ -1230,8 +1233,8 @@ const styles = StyleSheet.create({
     borderRadius: 13,
     backgroundColor: 'rgba(0, 186, 102, 0.16)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    color: COLORS.primary,
+    borderColor: colors.primary,
+    color: colors.primary,
     fontSize: 13,
     fontWeight: '900',
     textAlign: 'center',
@@ -1240,41 +1243,41 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   label: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   subLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   helperText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 18,
   },
   input: {
     width: '100%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 14,
-    color: COLORS.text,
+    color: colors.text,
     writingDirection: 'rtl',
   },
   textArea: {
@@ -1282,10 +1285,10 @@ const styles = StyleSheet.create({
   },
   otherChipBtn: {
     borderStyle: 'dashed',
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
   },
   otherChipText: {
-    color: COLORS.primary,
+    color: colors.primary,
   },
   customCatRow: {
     width: '100%',
@@ -1296,18 +1299,18 @@ const styles = StyleSheet.create({
   },
   customCatInput: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 13.5,
-    color: COLORS.text,
+    color: colors.text,
     writingDirection: 'rtl',
   },
   addCustomCatBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 11,
     borderRadius: 12,
@@ -1315,7 +1318,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   addCustomCatBtnText: {
-    color: COLORS.background,
+    color: colors.background,
     fontSize: 13,
     fontWeight: '800',
   },
@@ -1325,7 +1328,7 @@ const styles = StyleSheet.create({
   divider: {
     width: '100%',
     height: 1,
-    backgroundColor: COLORS.border,
+    backgroundColor: colors.border,
     marginVertical: 4,
   },
   capacityHeaderRow: {
@@ -1335,31 +1338,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   unlimitedTogglePill: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
   },
   unlimitedTogglePillActive: {
     backgroundColor: 'rgba(0, 186, 102, 0.16)',
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
   },
   unlimitedToggleText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   unlimitedToggleTextActive: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontWeight: '800',
   },
   unlimitedBanner: {
     width: '100%',
     backgroundColor: 'rgba(0, 186, 102, 0.1)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     borderRadius: 14,
     padding: 14,
     alignItems: 'center',
@@ -1368,12 +1371,12 @@ const styles = StyleSheet.create({
   unlimitedBannerTitle: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.primary,
+    color: colors.primary,
     textAlign: 'center',
   },
   unlimitedBannerSub: {
     fontSize: 11.5,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
   },
   capacityControlContainer: {
@@ -1389,52 +1392,52 @@ const styles = StyleSheet.create({
   },
   numPresetChip: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     paddingVertical: 9,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   numPresetChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   numPresetText: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
   },
   numPresetTextActive: {
-    color: COLORS.background,
+    color: colors.background,
   },
   modernCounterCard: {
     width: '100%',
     flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderRadius: 16,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
   },
   counterRoundBtn: {
     width: 44,
     height: 44,
     borderRadius: 14,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1.5,
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   counterRoundBtnText: {
     fontSize: 22,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: colors.primary,
     lineHeight: 24,
   },
   counterCenterBox: {
@@ -1444,14 +1447,14 @@ const styles = StyleSheet.create({
   counterDirectInput: {
     fontSize: 22,
     fontWeight: '900',
-    color: COLORS.primary,
+    color: colors.primary,
     paddingVertical: 0,
     minWidth: 70,
   },
   counterUnitLabel: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   durationCardsGrid: {
     width: '100%',
@@ -1462,16 +1465,16 @@ const styles = StyleSheet.create({
   durationCard: {
     flex: 1,
     minWidth: '47%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 14,
     padding: 12,
     alignItems: 'flex-end',
     gap: 3,
   },
   durationCardActive: {
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     backgroundColor: 'rgba(0, 186, 102, 0.12)',
   },
   durationIcon: {
@@ -1480,14 +1483,14 @@ const styles = StyleSheet.create({
   durationTitle: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
   },
   durationTitleActive: {
-    color: COLORS.primary,
+    color: colors.primary,
   },
   durationSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   rowInputs: {
     width: '100%',
@@ -1501,15 +1504,15 @@ const styles = StyleSheet.create({
   },
   dateInput: {
     width: '100%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 10,
     paddingVertical: 10,
     fontSize: 13.5,
     fontWeight: '700',
-    color: COLORS.text,
+    color: colors.text,
   },
   availabilityGrid: {
     width: '100%',
@@ -1520,16 +1523,16 @@ const styles = StyleSheet.create({
   availCard: {
     flex: 1,
     minWidth: '47%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 14,
     padding: 12,
     alignItems: 'flex-end',
     gap: 4,
   },
   availCardActive: {
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     backgroundColor: 'rgba(0, 186, 102, 0.14)',
   },
   availCardTop: {
@@ -1545,26 +1548,26 @@ const styles = StyleSheet.create({
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   availCheckText: {
     fontSize: 11,
     fontWeight: '900',
-    color: COLORS.background,
+    color: colors.background,
   },
   availCardTitle: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
   },
   availCardTitleActive: {
-    color: COLORS.primary,
+    color: colors.primary,
   },
   availCardSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   shiftsColumn: {
     width: '100%',
@@ -1575,24 +1578,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 11,
   },
   shiftRowBtnActive: {
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     backgroundColor: 'rgba(0, 186, 102, 0.12)',
   },
   shiftRowText: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.text,
+    color: colors.text,
   },
   shiftRowTextActive: {
-    color: COLORS.primary,
+    color: colors.primary,
     fontWeight: '800',
   },
   radioCircle: {
@@ -1600,18 +1603,18 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 10,
     borderWidth: 2,
-    borderColor: COLORS.textSecondary,
+    borderColor: colors.textSecondary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioCircleActive: {
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
   },
   radioInnerDot: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
   },
   dailyHoursRow: {
     width: '100%',
@@ -1626,24 +1629,24 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   hourPill: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 10,
   },
   hourPillActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   hourPillText: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   hourPillTextActive: {
-    color: COLORS.background,
+    color: colors.background,
     fontWeight: '800',
   },
   chipsWrap: {
@@ -1652,32 +1655,32 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   chip: {
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 12,
   },
   chipActive: {
     backgroundColor: 'rgba(0, 186, 102, 0.16)',
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
   },
   chipText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   chipTextActive: {
-    color: COLORS.primary,
+    color: colors.primary,
   },
   selectedSkillsBox: {
     width: '100%',
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderRadius: 14,
     padding: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     gap: 10,
     marginTop: 4,
     alignItems: 'flex-end',
@@ -1714,7 +1717,7 @@ const styles = StyleSheet.create({
   skillConfigName: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
   },
   importanceBtnsRow: {
     flexDirection: 'row-reverse',
@@ -1724,21 +1727,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
-    backgroundColor: COLORS.surface,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
   },
   impPillActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   impPillText: {
     fontSize: 11,
     fontWeight: '700',
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
   },
   impPillTextActive: {
-    color: COLORS.background,
+    color: colors.background,
     fontWeight: '800',
   },
   statusToggleRow: {
@@ -1748,35 +1751,35 @@ const styles = StyleSheet.create({
   },
   statusOption: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
+    backgroundColor: colors.surfaceLight,
     borderWidth: 1.5,
-    borderColor: COLORS.border,
+    borderColor: colors.border,
     borderRadius: 14,
     padding: 12,
     alignItems: 'flex-end',
     gap: 4,
   },
   statusOptionActive: {
-    borderColor: COLORS.primary,
+    borderColor: colors.primary,
     backgroundColor: 'rgba(0, 186, 102, 0.12)',
   },
   statusOptionTitle: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
+    color: colors.text,
     textAlign: 'right',
   },
   statusOptionTitleActive: {
-    color: COLORS.primary,
+    color: colors.primary,
   },
   statusOptionSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'right',
     lineHeight: 16,
   },
   submitBtn: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: colors.primary,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
@@ -1787,7 +1790,6 @@ const styles = StyleSheet.create({
     opacity: 0.65,
   },
   submitBtnText: {
-    color: COLORS.background,
     fontSize: 16,
     fontWeight: '900',
   },

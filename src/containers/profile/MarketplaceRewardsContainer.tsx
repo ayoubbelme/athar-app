@@ -5,7 +5,6 @@ import {
   RefreshControl,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -15,11 +14,12 @@ import { useNavigation } from '@react-navigation/native';
 import { profileApi } from '../../api/profile.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { RewardTutorialItem, UserProfileStats } from '../../types/profile.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { MarketplaceRewardsSection } from '../../components/profile/MarketplaceRewardsSection';
 
 export const MarketplaceRewardsContainer: React.FC = () => {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const [stats, setStats] = useState<UserProfileStats>({
     volunteerScore: 150,
@@ -93,48 +93,81 @@ export const MarketplaceRewardsContainer: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={styles.container}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['top', 'bottom', 'left', 'right']}
     >
       <StatusBar barStyle="light-content" />
 
       {/* Top Navigation Bar */}
-      <View style={styles.topNav}>
+      <View
+        style={{
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.surface,
+        }}
+      >
         <TouchableOpacity
-          style={styles.backBtn}
+          style={{
+            backgroundColor: colors.surfaceLight,
+            paddingHorizontal: 14,
+            paddingVertical: 7,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Text style={styles.backBtnText}>→ رجوع</Text>
+          <Text style={{ color: colors.text, fontSize: 13.5, fontWeight: '700' }}>→ رجوع</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>متجر المكافآت والدورات</Text>
-        <View style={styles.navSpacer} />
+        <Text style={{ fontSize: 16.5, fontWeight: '800', color: colors.text }}>
+          متجر المكافآت والدورات
+        </Text>
+        <View style={{ width: 68 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ padding: 20, gap: 20, paddingBottom: 36 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadData(true)}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
         <ErrorBanner message={errorMsg} />
 
         {/* Current Score Balance Banner */}
-        <View style={styles.balanceBanner}>
-          <View style={styles.balanceInfo}>
-            <Text style={styles.balanceLabel}>رصيد نقاطك المتاح للاستبدال</Text>
-            <Text style={styles.balanceValue}>{stats.volunteerScore} نقطة ⭐</Text>
+        <View
+          style={{
+            backgroundColor: colors.surface,
+            borderRadius: 18,
+            padding: 18,
+            borderWidth: 1.5,
+            borderColor: colors.primary,
+            alignItems: 'center',
+          }}
+        >
+          <View style={{ alignItems: 'center', gap: 4 }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>
+              رصيد نقاطك المتاح للاستبدال
+            </Text>
+            <Text style={{ fontSize: 24, fontWeight: '900', color: colors.primary }}>
+              {stats.volunteerScore} نقطة ⭐
+            </Text>
           </View>
         </View>
 
         {loading ? (
-          <View style={styles.loaderBox}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+          <View style={{ paddingVertical: 80, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <MarketplaceRewardsSection
@@ -148,73 +181,3 @@ export const MarketplaceRewardsContainer: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  topNav: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.surface,
-  },
-  backBtn: {
-    backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backBtnText: {
-    color: COLORS.text,
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  navTitle: {
-    fontSize: 16.5,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  navSpacer: {
-    width: 68,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 20,
-    paddingBottom: 36,
-  },
-  balanceBanner: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    padding: 18,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    alignItems: 'center',
-  },
-  balanceInfo: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  balanceLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  balanceValue: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: COLORS.primary,
-  },
-  loaderBox: {
-    paddingVertical: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

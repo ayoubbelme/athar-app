@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 export type TabIconType = 'home' | 'chances' | 'requests' | 'profile' | 'add';
 
@@ -14,7 +14,8 @@ interface TabIconProps {
  * Zero external native font linking required.
  */
 export const TabIcon: React.FC<TabIconProps> = ({ type, focused }) => {
-  const color = focused ? COLORS.primary : COLORS.textSecondary;
+  const { colors } = useTheme();
+  const color = focused ? colors.primary : colors.textSecondary;
 
   if (type === 'home') {
     return (

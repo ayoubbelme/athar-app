@@ -19,7 +19,7 @@ import {
   translateCategory,
   translateStatus,
 } from '../../utils/arabic.util';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { MatchDonutChart } from '../../components/common/MatchDonutChart';
 
@@ -36,6 +36,7 @@ function formatArabicDate(iso: string | null | undefined): string {
 }
 
 export const ChanceDetailsContainer: React.FC = () => {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const route = useRoute<DetailsRouteProp>();
   const { project, match, matchScore, alreadyApplied: initialApplied } =
@@ -82,21 +83,39 @@ export const ChanceDetailsContainer: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={styles.container}
+      style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'bottom', 'left', 'right']}
     >
       <StatusBar barStyle="light-content" />
 
       {/* Top Navigation Bar */}
-      <View style={styles.topNav}>
+      <View
+        style={[
+          styles.topNav,
+          {
+            borderBottomColor: colors.border,
+            backgroundColor: colors.surface,
+          },
+        ]}
+      >
         <TouchableOpacity
-          style={styles.backBtn}
+          style={[
+            styles.backBtn,
+            {
+              backgroundColor: colors.surfaceLight,
+              borderColor: colors.border,
+            },
+          ]}
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Text style={styles.backBtnText}>→ رجوع</Text>
+          <Text style={[styles.backBtnText, { color: colors.text }]}>
+            → رجوع
+          </Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>تفاصيل الفرصة التطوعية</Text>
+        <Text style={[styles.navTitle, { color: colors.text }]}>
+          تفاصيل الفرصة التطوعية
+        </Text>
         <View style={styles.navSpacer} />
       </View>
 
@@ -104,26 +123,54 @@ export const ChanceDetailsContainer: React.FC = () => {
         <ErrorBanner message={errorMsg} />
 
         {/* Hero Title & Organization Card with Match Donut Chart */}
-        <View style={styles.heroCard}>
+        <View
+          style={[
+            styles.heroCard,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.primary,
+            },
+          ]}
+        >
           <View style={styles.heroTopRow}>
             <View style={styles.heroInfoCol}>
               <View style={styles.badgesRow}>
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusBadgeText}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: colors.surfaceLight },
+                  ]}
+                >
+                  <Text style={[styles.statusBadgeText, { color: colors.text }]}>
                     {translateStatus(project.status)}
                   </Text>
                 </View>
                 {project.category && (
-                  <View style={styles.categoryBadge}>
-                    <Text style={styles.categoryBadgeText}>
+                  <View
+                    style={[
+                      styles.categoryBadge,
+                      {
+                        backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                        borderColor: colors.primary,
+                      },
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryBadgeText,
+                        { color: colors.primary },
+                      ]}
+                    >
                       {translateCategory(project.category)}
                     </Text>
                   </View>
                 )}
               </View>
 
-              <Text style={styles.projectTitle}>{project.title}</Text>
-              <Text style={styles.orgName}>
+              <Text style={[styles.projectTitle, { color: colors.text }]}>
+                {project.title}
+              </Text>
+              <Text style={[styles.orgName, { color: colors.primary }]}>
                 🏛️ الجمعية المنظمة: {project.organization?.name ?? 'جمعية'}
               </Text>
             </View>
@@ -140,42 +187,74 @@ export const ChanceDetailsContainer: React.FC = () => {
         </View>
 
         {/* Full Description Section */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>الوصف الكامل للمشروع</Text>
-          <Text style={styles.fullDescription}>{project.description}</Text>
+        <View
+          style={[
+            styles.sectionCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionHeader, { color: colors.text }]}>
+            الوصف الكامل للمشروع
+          </Text>
+          <Text style={[styles.fullDescription, { color: colors.textSecondary }]}>
+            {project.description}
+          </Text>
         </View>
 
         {/* Project Logistics & Schedule Grid */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>معلومات التوقيت والموقع</Text>
+        <View
+          style={[
+            styles.sectionCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionHeader, { color: colors.text }]}>
+            معلومات التوقيت والموقع
+          </Text>
 
           <View style={styles.infoGrid}>
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>📍 الموقع</Text>
-              <Text style={styles.infoValue}>
+            <View
+              style={[styles.infoItem, { backgroundColor: colors.surfaceLight }]}
+            >
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                📍 الموقع
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
                 {project.location || 'عن بُعد / مرن'}
               </Text>
             </View>
 
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>👥 المقاعد المتاحة</Text>
-              <Text style={styles.infoValue}>
+            <View
+              style={[styles.infoItem, { backgroundColor: colors.surfaceLight }]}
+            >
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                👥 المقاعد المتاحة
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
                 {project.maxVolunteers !== null
                   ? `${project.acceptedVolunteers} من ${project.maxVolunteers} متطوع`
                   : `${project.acceptedVolunteers} متطوع مقبول`}
               </Text>
             </View>
 
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>📅 تاريخ البداية</Text>
-              <Text style={styles.infoValue}>
+            <View
+              style={[styles.infoItem, { backgroundColor: colors.surfaceLight }]}
+            >
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                📅 تاريخ البداية
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
                 {formatArabicDate(project.startDate)}
               </Text>
             </View>
 
-            <View style={styles.infoItem}>
-              <Text style={styles.infoLabel}>🏁 تاريخ النهاية</Text>
-              <Text style={styles.infoValue}>
+            <View
+              style={[styles.infoItem, { backgroundColor: colors.surfaceLight }]}
+            >
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                🏁 تاريخ النهاية
+              </Text>
+              <Text style={[styles.infoValue, { color: colors.text }]}>
                 {formatArabicDate(project.endDate)}
               </Text>
             </View>
@@ -183,11 +262,22 @@ export const ChanceDetailsContainer: React.FC = () => {
 
           {availabilities.length > 0 && (
             <View style={styles.availabilityRow}>
-              <Text style={styles.infoLabel}>🕒 أوقات التطوع المطلوبة:</Text>
+              <Text style={[styles.infoLabel, { color: colors.textSecondary }]}>
+                🕒 أوقات التطوع المطلوبة:
+              </Text>
               <View style={styles.chipsWrap}>
                 {availabilities.map((av) => (
-                  <View key={av} style={styles.availChip}>
-                    <Text style={styles.availChipText}>
+                  <View
+                    key={av}
+                    style={[
+                      styles.availChip,
+                      {
+                        backgroundColor: colors.surfaceLight,
+                        borderColor: colors.border,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.availChipText, { color: colors.text }]}>
                       {translateAvailability(av)}
                     </Text>
                   </View>
@@ -198,20 +288,48 @@ export const ChanceDetailsContainer: React.FC = () => {
         </View>
 
         {/* Skills Breakdown Section */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionHeader}>المهارات المطلوبة للفرصة</Text>
+        <View
+          style={[
+            styles.sectionCard,
+            { backgroundColor: colors.surface, borderColor: colors.border },
+          ]}
+        >
+          <Text style={[styles.sectionHeader, { color: colors.text }]}>
+            المهارات المطلوبة للفرصة
+          </Text>
 
           {matchedSkills.length > 0 || missingSkills.length > 0 ? (
             <View style={styles.skillsGroup}>
               {matchedSkills.length > 0 && (
                 <View style={styles.skillSubGroup}>
-                  <Text style={styles.subGroupTitle}>
+                  <Text
+                    style={[
+                      styles.subGroupTitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     مهارات متوفرة لديك ({matchedSkills.length}):
                   </Text>
                   <View style={styles.chipsWrap}>
                     {matchedSkills.map((s) => (
-                      <View key={s.skillId} style={styles.matchedSkillChip}>
-                        <Text style={styles.matchedSkillText}>✓ {s.name}</Text>
+                      <View
+                        key={s.skillId}
+                        style={[
+                          styles.matchedSkillChip,
+                          {
+                            backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                            borderColor: colors.primary,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.matchedSkillText,
+                            { color: colors.primary },
+                          ]}
+                        >
+                          ✓ {s.name}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -220,13 +338,34 @@ export const ChanceDetailsContainer: React.FC = () => {
 
               {missingSkills.length > 0 && (
                 <View style={styles.skillSubGroup}>
-                  <Text style={styles.subGroupTitle}>
+                  <Text
+                    style={[
+                      styles.subGroupTitle,
+                      { color: colors.textSecondary },
+                    ]}
+                  >
                     مهارات إضافية مطلوبة ({missingSkills.length}):
                   </Text>
                   <View style={styles.chipsWrap}>
                     {missingSkills.map((s) => (
-                      <View key={s.skillId} style={styles.missingSkillChip}>
-                        <Text style={styles.missingSkillText}>{s.name}</Text>
+                      <View
+                        key={s.skillId}
+                        style={[
+                          styles.missingSkillChip,
+                          {
+                            backgroundColor: colors.surfaceLight,
+                            borderColor: colors.border,
+                          },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.missingSkillText,
+                            { color: colors.textSecondary },
+                          ]}
+                        >
+                          {s.name}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -236,13 +375,28 @@ export const ChanceDetailsContainer: React.FC = () => {
           ) : projectSkills.length > 0 ? (
             <View style={styles.chipsWrap}>
               {projectSkills.map((req) => (
-                <View key={req.skill.id} style={styles.matchedSkillChip}>
-                  <Text style={styles.matchedSkillText}>{req.skill.name}</Text>
+                <View
+                  key={req.skill.id}
+                  style={[
+                    styles.matchedSkillChip,
+                    {
+                      backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                      borderColor: colors.primary,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={[styles.matchedSkillText, { color: colors.primary }]}
+                  >
+                    {req.skill.name}
+                  </Text>
                 </View>
               ))}
             </View>
           ) : (
-            <Text style={styles.emptySkillsText}>
+            <Text
+              style={[styles.emptySkillsText, { color: colors.textSecondary }]}
+            >
               لا توجد مهارات خاصة محددة — الفرصة مفتوحة لجميع المتطوعين.
             </Text>
           )}
@@ -250,10 +404,26 @@ export const ChanceDetailsContainer: React.FC = () => {
       </ScrollView>
 
       {/* Bottom Sticky Apply Bar */}
-      <View style={styles.bottomBar}>
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            backgroundColor: colors.surface,
+            borderTopColor: colors.border,
+          },
+        ]}
+      >
         {applied ? (
-          <View style={styles.appliedBanner}>
-            <Text style={styles.appliedBannerText}>
+          <View
+            style={[
+              styles.appliedBanner,
+              {
+                backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                borderColor: colors.primary,
+              },
+            ]}
+          >
+            <Text style={[styles.appliedBannerText, { color: colors.primary }]}>
               ✓ تم إرسال طلب التطوع لهذه الفرصة
             </Text>
           </View>
@@ -261,16 +431,20 @@ export const ChanceDetailsContainer: React.FC = () => {
           <TouchableOpacity
             style={[
               styles.applyButton,
-              (!canApply || applying) && styles.applyButtonDisabled,
+              { backgroundColor: colors.primary },
+              (!canApply || applying) && {
+                backgroundColor: colors.surfaceLight,
+                opacity: 0.65,
+              },
             ]}
             onPress={handleApply}
             disabled={!canApply || applying}
             activeOpacity={0.85}
           >
             {applying ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={styles.applyButtonText}>
+              <Text style={[styles.applyButtonText, { color: colors.background }]}>
                 {isFull
                   ? 'اكتمل العدد الأقصى للمتطوعين'
                   : isOpen
@@ -288,7 +462,6 @@ export const ChanceDetailsContainer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   topNav: {
     flexDirection: 'row-reverse',
@@ -297,26 +470,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.surface,
   },
   backBtn: {
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   backBtnText: {
-    color: COLORS.text,
     fontSize: 13.5,
     fontWeight: '700',
   },
   navTitle: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: COLORS.text,
   },
   navSpacer: {
     width: 68,
@@ -327,11 +494,9 @@ const styles = StyleSheet.create({
     paddingBottom: 36,
   },
   heroCard: {
-    backgroundColor: COLORS.surface,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1.5,
-    borderColor: COLORS.primary,
   },
   heroTopRow: {
     flexDirection: 'row-reverse',
@@ -350,33 +515,27 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   categoryBadge: {
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   categoryBadgeText: {
-    color: COLORS.primary,
     fontSize: 12,
     fontWeight: '700',
   },
   statusBadge: {
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
   },
   statusBadgeText: {
-    color: COLORS.text,
     fontSize: 12,
     fontWeight: '700',
   },
   projectTitle: {
     fontSize: 20,
     fontWeight: '800',
-    color: COLORS.text,
     lineHeight: 28,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -384,28 +543,23 @@ const styles = StyleSheet.create({
   orgName: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: COLORS.primary,
     textAlign: 'right',
   },
   sectionCard: {
-    backgroundColor: COLORS.surface,
     borderRadius: 18,
     padding: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 12,
     alignItems: 'flex-end',
   },
   sectionHeader: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   fullDescription: {
     fontSize: 14.5,
-    color: COLORS.textSecondary,
     lineHeight: 24,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -419,7 +573,6 @@ const styles = StyleSheet.create({
   infoItem: {
     flex: 1,
     minWidth: '46%',
-    backgroundColor: COLORS.surfaceLight,
     borderRadius: 12,
     padding: 12,
     alignItems: 'flex-end',
@@ -428,12 +581,10 @@ const styles = StyleSheet.create({
   infoLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.textSecondary,
   },
   infoValue: {
     fontSize: 13.5,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
   },
   availabilityRow: {
@@ -448,15 +599,12 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   availChip: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 8,
   },
   availChipText: {
-    color: COLORS.text,
     fontSize: 12,
     fontWeight: '600',
   },
@@ -473,71 +621,53 @@ const styles = StyleSheet.create({
   subGroupTitle: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.textSecondary,
   },
   matchedSkillChip: {
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
   },
   matchedSkillText: {
-    color: COLORS.primary,
     fontSize: 12.5,
     fontWeight: '700',
   },
   missingSkillChip: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
   },
   missingSkillText: {
-    color: COLORS.textSecondary,
     fontSize: 12.5,
     fontWeight: '600',
   },
   emptySkillsText: {
     fontSize: 13.5,
-    color: COLORS.textSecondary,
     textAlign: 'right',
   },
   bottomBar: {
     paddingHorizontal: 20,
     paddingVertical: 14,
-    backgroundColor: COLORS.surface,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   applyButton: {
-    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 15,
     alignItems: 'center',
-  },
-  applyButtonDisabled: {
-    backgroundColor: COLORS.surfaceLight,
-    opacity: 0.65,
+    justifyContent: 'center',
   },
   applyButtonText: {
-    color: COLORS.background,
     fontSize: 15.5,
     fontWeight: '800',
   },
   appliedBanner: {
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 14,
     alignItems: 'center',
   },
   appliedBannerText: {
-    color: COLORS.primary,
     fontSize: 14.5,
     fontWeight: '800',
   },

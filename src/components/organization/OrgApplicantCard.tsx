@@ -6,9 +6,11 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { OrganizationApplicationItem } from '../../types/organization.types';
 import { translateApplicationStatus } from '../../utils/status.util';
+import { AppVectorIcon } from '../common/AppVectorIcon';
+import { MatchDonutChart } from '../common/MatchDonutChart';
 
 export interface OrgApplicantCardProps {
   item: OrganizationApplicationItem;
@@ -36,8 +38,16 @@ export const OrgApplicantCard: React.FC<OrgApplicantCardProps> = ({
   onDecision,
   onOpenCompleteModal,
 }) => {
-  const { id, status, matchScore, message, project, volunteerImpact, createdAt } =
-    item;
+  const { colors } = useTheme();
+  const {
+    id,
+    status,
+    matchScore,
+    message,
+    project,
+    volunteerImpact,
+    createdAt,
+  } = item;
   const applicant = item.volunteer ?? item.user;
   const isProcessing = processingId === id;
 
@@ -54,204 +64,257 @@ export const OrgApplicantCard: React.FC<OrgApplicantCardProps> = ({
   const accentColor = isCompleted
     ? '#38BDF8'
     : isAccepted
-    ? COLORS.primary
+    ? colors.primary
     : isPending
-    ? '#FFC107'
-    : isRejected
-    ? COLORS.error
-    : COLORS.border;
-
-  const initials = volunteerName
-    .split(' ')
-    .slice(0, 2)
-    .map((w: string) => w[0])
-    .join('')
-    .toUpperCase();
+    ? '#F59E0B'
+    : colors.error;
 
   return (
-    <View style={[styles.card, { borderLeftColor: accentColor }]}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }, isCompleted && styles.cardCompleted]}>
+      <View style={[styles.statusStrip, { backgroundColor: accentColor }]} />
 
-      {/* ── Header: avatar + name + status ──────────────────────────────── */}
+      {/* Top Row: Volunteer Identity + Status Badge on Right, Match Donut Chart on Left */}
       <View style={styles.headerRow}>
-        <View style={styles.avatarRow}>
-          <View style={[styles.avatarCircle, { borderColor: accentColor }]}>
-            <Text style={[styles.avatarText, { color: accentColor }]}>
-              {initials}
-            </Text>
-          </View>
-          <View style={styles.nameBox}>
-            <Text style={styles.volunteerName}>{volunteerName}</Text>
-            {Boolean(volunteerEmail) && (
-              <Text style={styles.volunteerEmail}>{volunteerEmail}</Text>
-            )}
+        <View style={styles.volunteerCol}>
+          <View style={styles.avatarRow}>
+            <View style={[styles.avatarCircle, { backgroundColor: 'rgba(0, 186, 102, 0.14)', borderColor: colors.primary }]}>
+              <Text style={[styles.avatarText, { color: colors.primary }]}>
+                {volunteerName.slice(0, 2).toUpperCase()}
+              </Text>
+            </View>
+            <View style={styles.nameBox}>
+              <View style={styles.nameAndBadgeRow}>
+                <Text style={[styles.volunteerName, { color: colors.text }]} numberOfLines={1}>
+                  {volunteerName}
+                </Text>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    isPending && styles.badgePending,
+                    isAccepted && styles.badgeAccepted,
+                    isCompleted && styles.badgeCompleted,
+                    isRejected && styles.badgeRejected,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.statusText,
+                      isPending && styles.textPending,
+                      isAccepted && { color: colors.primary },
+                      isCompleted && styles.textCompleted,
+                      isRejected && { color: colors.error },
+                    ]}
+                  >
+                    {translateApplicationStatus(status)}
+                  </Text>
+                </View>
+              </View>
+
+              {Boolean(volunteerEmail) && (
+                <Text style={[styles.volunteerEmail, { color: colors.textSecondary }]}>{volunteerEmail}</Text>
+              )}
+            </View>
           </View>
         </View>
 
-        <View
-          style={[
-            styles.statusBadge,
-            isPending && styles.badgePending,
-            isAccepted && styles.badgeAccepted,
-            isCompleted && styles.badgeCompleted,
-            isRejected && styles.badgeRejected,
-          ]}
-        >
-          <Text
-            style={[
-              styles.statusText,
-              isPending && styles.textPending,
-              isAccepted && styles.textAccepted,
-              isCompleted && styles.textCompleted,
-              isRejected && styles.textRejected,
-            ]}
-          >
-            {translateApplicationStatus(status)}
-          </Text>
-        </View>
+        {matchScore !== null && matchScore !== undefined && (
+          <MatchDonutChart
+            score={matchScore}
+            size={52}
+            strokeWidth={5}
+            label="توافق"
+          />
+        )}
       </View>
 
-      {/* ── Opportunity banner ──────────────────────────────────────────── */}
-      <View style={styles.projectBanner}>
-        <Text style={styles.projectLabel}>📌 الفرصة المتقدم إليها</Text>
-        <Text style={styles.projectTitle} numberOfLines={1}>
+      {/* Target Opportunity Banner */}
+      <View style={[styles.projectBanner, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+        <View style={styles.projectBannerHeader}>
+          <AppVectorIcon
+            name="target"
+            size={12}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.projectLabel, { color: colors.textSecondary }]}>الفرصة المتقدم إليها:</Text>
+        </View>
+        <Text style={[styles.projectTitle, { color: colors.primary }]} numberOfLines={1}>
           {project?.title ?? 'مشروع تطوعي'}
         </Text>
       </View>
 
-      {/* ── Meta row ────────────────────────────────────────────────────── */}
+      {/* Meta Chips: Date & Location */}
       <View style={styles.metaRow}>
-        <View style={styles.metaItem}>
-          <Text style={styles.metaText}>📅 {formatDate(createdAt)}</Text>
+        <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <AppVectorIcon
+            name="calendar"
+            size={12}
+            color={colors.textSecondary}
+          />
+          <Text style={[styles.metaText, { color: colors.textSecondary }]}>{formatDate(createdAt)}</Text>
         </View>
+
         {Boolean(volunteerLocation) && (
-          <View style={styles.metaItem}>
-            <Text style={styles.metaText}>📍 {volunteerLocation}</Text>
-          </View>
-        )}
-        {matchScore !== null && matchScore !== undefined && (
-          <View style={styles.matchPill}>
-            <Text style={styles.matchPillText}>⭐ {matchScore}% توافق</Text>
+          <View style={[styles.metaChip, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <AppVectorIcon
+              name="location"
+              size={12}
+              color={colors.textSecondary}
+            />
+            <Text style={[styles.metaText, { color: colors.textSecondary }]}>{volunteerLocation}</Text>
           </View>
         )}
       </View>
 
-      {/* ── Skills ──────────────────────────────────────────────────────── */}
+      {/* Volunteer Skills */}
       {rawSkills.length > 0 && (
         <View style={styles.skillsWrap}>
           {rawSkills.slice(0, 4).map((s, idx) => {
             const skillName = s?.skill?.name ?? s?.name ?? 'مهارة';
             return (
-              <View key={s?.skill?.id ?? idx} style={styles.skillChip}>
-                <Text style={styles.skillChipText}>⚡ {skillName}</Text>
+              <View key={s?.skill?.id ?? idx} style={[styles.skillChip, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+                <AppVectorIcon name="bolt" size={11} color={colors.primary} />
+                <Text style={[styles.skillChipText, { color: colors.text }]}>{skillName}</Text>
               </View>
             );
           })}
-          {rawSkills.length > 4 && (
-            <View style={styles.skillChipMore}>
-              <Text style={styles.skillChipText}>+{rawSkills.length - 4}</Text>
-            </View>
-          )}
         </View>
       )}
 
-      {/* ── Motivation message ──────────────────────────────────────────── */}
+      {/* Volunteer Motivation Message */}
       {Boolean(message) && (
-        <View style={styles.messageBox}>
-          <Text style={styles.messageLabel}>💬 رسالة المتطوع</Text>
-          <Text style={styles.messageText}>"{message}"</Text>
+        <View style={[styles.messageBox, { backgroundColor: colors.surfaceLight }]}>
+          <Text style={[styles.messageLabel, { color: colors.textSecondary }]}>رسالة المتطوع:</Text>
+          <Text style={[styles.messageText, { color: colors.text }]}>"{message}"</Text>
         </View>
       )}
 
-      {/* ── Verified impact when COMPLETED ─────────────────────────────── */}
+      {/* Verified Impact Box if COMPLETED */}
       {isCompleted && volunteerImpact && (
-        <View style={styles.verifiedImpactBox}>
-          <Text style={styles.verifiedImpactTitle}>✅ الأثر المعتمد</Text>
+        <View style={[styles.verifiedImpactBox, { borderColor: colors.primary }]}>
+          <View style={styles.verifiedHeaderRow}>
+            <AppVectorIcon name="trophy" size={14} color={colors.primary} />
+            <Text style={[styles.verifiedImpactTitle, { color: colors.primary }]}>
+              الأثر المعتمد من الجمعية لهذا المتطوع:
+            </Text>
+          </View>
+
           <View style={styles.verifiedMetricsRow}>
-            <View style={styles.verifiedMetricPill}>
-              <Text style={styles.verifiedMetricValue}>{volunteerImpact.hours}</Text>
-              <Text style={styles.verifiedMetricSub}>ساعة</Text>
+            <View style={[styles.verifiedMetricChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <AppVectorIcon name="clock" size={12} color={colors.primary} />
+              <Text style={[styles.verifiedMetricPill, { color: colors.text }]}>
+                {volunteerImpact.hours} ساعة
+              </Text>
             </View>
-            <View style={styles.verifiedMetricPill}>
-              <Text style={styles.verifiedMetricValue}>{volunteerImpact.activitiesCount}</Text>
-              <Text style={styles.verifiedMetricSub}>نشاط</Text>
+            <View style={[styles.verifiedMetricChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <AppVectorIcon name="bolt" size={12} color={colors.primary} />
+              <Text style={[styles.verifiedMetricPill, { color: colors.text }]}>
+                {volunteerImpact.activitiesCount} نشاط
+              </Text>
             </View>
-            <View style={styles.verifiedMetricPill}>
-              <Text style={styles.verifiedMetricValue}>{volunteerImpact.beneficiariesCount}</Text>
-              <Text style={styles.verifiedMetricSub}>مستفيد</Text>
+            <View style={[styles.verifiedMetricChip, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <AppVectorIcon name="users" size={12} color={colors.primary} />
+              <Text style={[styles.verifiedMetricPill, { color: colors.text }]}>
+                {volunteerImpact.beneficiariesCount} مستفيد
+              </Text>
             </View>
           </View>
+
           {Boolean(volunteerImpact.description) && (
-            <Text style={styles.verifiedDescText} numberOfLines={2}>
-              📝 {volunteerImpact.description}
+            <Text style={[styles.verifiedDescText, { color: colors.textSecondary }]} numberOfLines={2}>
+              "{volunteerImpact.description}"
             </Text>
           )}
         </View>
       )}
 
-      {/* ── PENDING: Accept / Reject ────────────────────────────────────── */}
+      {/* Decision Buttons for PENDING requests */}
       {isPending && (
-        <View style={styles.decisionRow}>
+        <View style={[styles.decisionRow, { borderTopColor: colors.border }]}>
           <TouchableOpacity
-            style={[styles.acceptBtn, isProcessing && styles.btnDisabled]}
+            style={[styles.acceptBtn, { backgroundColor: colors.primary }, isProcessing && styles.btnDisabled]}
             onPress={() => onDecision(id, 'ACCEPTED')}
             disabled={isProcessing}
             activeOpacity={0.85}
           >
             {isProcessing ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={styles.acceptBtnText}>✓ قبول</Text>
+              <View style={styles.btnContentRow}>
+                <AppVectorIcon
+                  name="check"
+                  size={14}
+                  color={colors.background}
+                />
+                <Text style={[styles.acceptBtnText, { color: colors.background }]}>قبول المتطوع</Text>
+              </View>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.rejectBtn, isProcessing && styles.btnDisabled]}
+            style={[styles.rejectBtn, { borderColor: colors.error }, isProcessing && styles.btnDisabled]}
             onPress={() => onDecision(id, 'REJECTED')}
             disabled={isProcessing}
             activeOpacity={0.85}
           >
-            <Text style={styles.rejectBtnText}>✕ رفض</Text>
+            <View style={styles.btnContentRow}>
+              <AppVectorIcon name="close" size={12} color={colors.error} />
+              <Text style={[styles.rejectBtnText, { color: colors.error }]}>رفض</Text>
+            </View>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* ── ACCEPTED: Confirm completion ────────────────────────────────── */}
+      {/* Action Buttons for ACCEPTED requests: Confirm Task Completion & Set Impact */}
       {isAccepted && (
-        <View style={styles.decisionRow}>
+        <View style={[styles.decisionRow, { borderTopColor: colors.border }]}>
           <TouchableOpacity
-            style={[styles.completeBtn, isProcessing && styles.btnDisabled]}
+            style={[styles.completeBtn, { backgroundColor: colors.primary }, isProcessing && styles.btnDisabled]}
             onPress={() => onOpenCompleteModal(item)}
             disabled={isProcessing}
             activeOpacity={0.85}
           >
             {isProcessing ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={styles.completeBtnText}>🏆 تأكيد إنجاز المهمة وتحديد الأثر</Text>
+              <View style={styles.btnContentRow}>
+                <AppVectorIcon
+                  name="trophy"
+                  size={14}
+                  color={colors.background}
+                />
+                <Text style={[styles.completeBtnText, { color: colors.background }]}>
+                  تأكيد الإنجاز وتحديد الساعات والأثر
+                </Text>
+              </View>
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.rejectBtn, isProcessing && styles.btnDisabled]}
+            style={[styles.rejectBtn, { borderColor: colors.error }, isProcessing && styles.btnDisabled]}
             onPress={() => onDecision(id, 'REJECTED')}
             disabled={isProcessing}
             activeOpacity={0.85}
           >
-            <Text style={styles.rejectBtnText}>✕</Text>
+            <Text style={[styles.rejectBtnText, { color: colors.error }]}>إلغاء</Text>
           </TouchableOpacity>
         </View>
       )}
 
-      {/* ── COMPLETED: Edit impact ──────────────────────────────────────── */}
+      {/* Allow Organization to Edit Verified Impact on COMPLETED requests */}
       {isCompleted && (
-        <TouchableOpacity
-          style={[styles.editImpactBtn, isProcessing && styles.btnDisabled]}
-          onPress={() => onOpenCompleteModal(item)}
-          disabled={isProcessing}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.editImpactBtnText}>✏️ تعديل الساعات والأثر الممنوح</Text>
-        </TouchableOpacity>
+        <View style={[styles.decisionRow, { borderTopColor: colors.border }]}>
+          <TouchableOpacity
+            style={[styles.editImpactBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.primary }, isProcessing && styles.btnDisabled]}
+            onPress={() => onOpenCompleteModal(item)}
+            disabled={isProcessing}
+            activeOpacity={0.85}
+          >
+            <AppVectorIcon name="sparkle" size={13} color={colors.primary} />
+            <Text style={[styles.editImpactBtnText, { color: colors.primary }]}>
+              تعديل الساعات والأثر الممنوح للمتطوع
+            </Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
@@ -261,29 +324,36 @@ export default OrgApplicantCard;
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
+    position: 'relative',
+    overflow: 'hidden',
     borderRadius: 20,
     padding: 16,
+    paddingRight: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderLeftWidth: 4,
-    gap: 11,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
+    gap: 12,
   },
-
-  // ── Header ───────────────────────────────────────────────────────────────
+  cardCompleted: {
+    borderColor: 'rgba(56, 189, 248, 0.45)',
+    borderWidth: 1.5,
+  },
+  statusStrip: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    width: 4.5,
+  },
   headerRow: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     gap: 10,
   },
-  avatarRow: {
+  volunteerCol: {
     flex: 1,
+    alignItems: 'flex-end',
+  },
+  avatarRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
@@ -291,215 +361,249 @@ const styles = StyleSheet.create({
   avatarCircle: {
     width: 46,
     height: 46,
-    borderRadius: 23,
-    backgroundColor: 'rgba(0, 186, 102, 0.1)',
+    borderRadius: 16,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 15, fontWeight: '800' },
-  nameBox: { flex: 1, alignItems: 'flex-end', gap: 2 },
+  avatarText: {
+    fontSize: 15,
+    fontWeight: '900',
+  },
+  nameBox: {
+    flex: 1,
+    alignItems: 'flex-end',
+    gap: 3,
+  },
+  nameAndBadgeRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
   volunteerName: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 16.5,
+    fontWeight: '900',
     textAlign: 'right',
   },
-  volunteerEmail: { fontSize: 11.5, color: COLORS.textSecondary, textAlign: 'right' },
-
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12 },
+  volunteerEmail: {
+    fontSize: 12,
+    textAlign: 'right',
+  },
+  statusBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 10,
+  },
   badgePending: {
-    backgroundColor: 'rgba(255, 193, 7, 0.15)',
+    backgroundColor: 'rgba(245, 158, 11, 0.15)',
     borderWidth: 1,
-    borderColor: '#FFC107',
+    borderColor: 'rgba(245, 158, 11, 0.45)',
   },
   badgeAccepted: {
     backgroundColor: 'rgba(0, 186, 102, 0.15)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
+    borderColor: 'rgba(0, 186, 102, 0.45)',
   },
   badgeCompleted: {
     backgroundColor: 'rgba(56, 189, 248, 0.15)',
     borderWidth: 1,
-    borderColor: '#38BDF8',
+    borderColor: 'rgba(56, 189, 248, 0.45)',
   },
   badgeRejected: {
     backgroundColor: 'rgba(255, 90, 95, 0.15)',
     borderWidth: 1,
-    borderColor: COLORS.error,
+    borderColor: 'rgba(255, 90, 95, 0.45)',
   },
-  statusText: { fontSize: 11.5, fontWeight: '800' },
-  textPending: { color: '#FFC107' },
-  textAccepted: { color: COLORS.primary },
-  textCompleted: { color: '#38BDF8' },
-  textRejected: { color: COLORS.error },
-
-  // ── Project banner ────────────────────────────────────────────────────────
+  statusText: {
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  textPending: {
+    color: '#F59E0B',
+  },
+  textCompleted: {
+    color: '#38BDF8',
+  },
   projectBanner: {
-    backgroundColor: COLORS.surfaceLight,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 9,
     alignItems: 'flex-end',
     gap: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
-  projectLabel: { fontSize: 10.5, fontWeight: '700', color: COLORS.textSecondary },
+  projectBannerHeader: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
+  },
+  projectLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
   projectTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: COLORS.primary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
-
-  // ── Meta row ─────────────────────────────────────────────────────────────
   metaRow: {
     flexDirection: 'row-reverse',
     flexWrap: 'wrap',
     alignItems: 'center',
     gap: 8,
   },
-  metaItem: { flexDirection: 'row-reverse', alignItems: 'center' },
-  metaText: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '600' },
-  matchPill: {
-    marginLeft: 'auto',
-    backgroundColor: 'rgba(0, 186, 102, 0.13)',
+  metaChip: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 9,
-    paddingVertical: 3,
-    borderRadius: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.primary,
   },
-  matchPillText: { fontSize: 11.5, fontWeight: '800', color: COLORS.primary },
-
-  // ── Skills ────────────────────────────────────────────────────────────────
-  skillsWrap: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 6 },
+  metaText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  skillsWrap: {
+    flexDirection: 'row-reverse',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
   skillChip: {
-    backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  skillChipMore: {
-    backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    opacity: 0.7,
-  },
-  skillChipText: { fontSize: 11.5, color: COLORS.text, fontWeight: '600' },
-
-  // ── Message box ───────────────────────────────────────────────────────────
-  messageBox: {
-    backgroundColor: COLORS.surfaceLight,
-    borderRadius: 12,
-    padding: 11,
-    alignItems: 'flex-end',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
     gap: 4,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
-  messageLabel: { fontSize: 11, fontWeight: '700', color: COLORS.textSecondary },
+  skillChipText: {
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
+  messageBox: {
+    borderRadius: 12,
+    padding: 10,
+    alignItems: 'flex-end',
+    gap: 3,
+  },
+  messageLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+  },
   messageText: {
-    fontSize: 13,
-    color: COLORS.text,
+    fontSize: 12.5,
     fontStyle: 'italic',
     textAlign: 'right',
     writingDirection: 'rtl',
-    lineHeight: 19,
   },
-
-  // ── Verified impact ───────────────────────────────────────────────────────
   verifiedImpactBox: {
     backgroundColor: 'rgba(0, 186, 102, 0.1)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
-    borderRadius: 14,
-    padding: 13,
+    borderRadius: 12,
+    padding: 12,
     alignItems: 'flex-end',
-    gap: 10,
+    gap: 8,
   },
-  verifiedImpactTitle: { fontSize: 12.5, fontWeight: '800', color: COLORS.primary },
+  verifiedHeaderRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 6,
+  },
+  verifiedImpactTitle: {
+    fontSize: 12.5,
+    fontWeight: '800',
+  },
   verifiedMetricsRow: {
     flexDirection: 'row-reverse',
     flexWrap: 'wrap',
     gap: 8,
-    width: '100%',
-    justifyContent: 'flex-end',
+  },
+  verifiedMetricChip: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
   },
   verifiedMetricPill: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    minWidth: 60,
+    fontSize: 12,
+    fontWeight: '700',
   },
-  verifiedMetricValue: { fontSize: 17, fontWeight: '900', color: COLORS.text },
-  verifiedMetricSub: { fontSize: 10, color: COLORS.textSecondary, fontWeight: '600', marginTop: 1 },
   verifiedDescText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
-    lineHeight: 18,
   },
-
-  // ── Decision row ──────────────────────────────────────────────────────────
   decisionRow: {
     flexDirection: 'row-reverse',
     gap: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+  },
+  btnContentRow: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 6,
   },
   acceptBtn: {
     flex: 1.4,
-    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  acceptBtnText: { color: COLORS.background, fontSize: 14, fontWeight: '800' },
+  acceptBtnText: {
+    fontSize: 14,
+    fontWeight: '800',
+  },
   completeBtn: {
-    flex: 1,
-    backgroundColor: COLORS.primary,
+    flex: 1.8,
     borderRadius: 12,
     paddingVertical: 11,
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  completeBtnText: { color: COLORS.background, fontSize: 12.5, fontWeight: '800', textAlign: 'center' },
+  completeBtnText: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    textAlign: 'center',
+  },
   editImpactBtn: {
-    backgroundColor: COLORS.surfaceLight,
+    flex: 1,
+    flexDirection: 'row-reverse',
+    gap: 6,
     borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  editImpactBtnText: { color: COLORS.primary, fontSize: 13, fontWeight: '800' },
+  editImpactBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
   rejectBtn: {
-    flex: 0.5,
-    backgroundColor: 'rgba(255, 90, 95, 0.1)',
+    flex: 0.7,
+    backgroundColor: 'rgba(255, 90, 95, 0.12)',
     borderWidth: 1,
-    borderColor: COLORS.error,
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  rejectBtnText: { color: COLORS.error, fontSize: 13, fontWeight: '800' },
-  btnDisabled: { opacity: 0.6 },
+  rejectBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  btnDisabled: {
+    opacity: 0.6,
+  },
 });

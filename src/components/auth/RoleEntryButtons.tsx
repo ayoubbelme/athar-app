@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { SelfRegistrationRole } from '../../types/auth.types';
 
 interface RoleEntryButtonsProps {
@@ -9,84 +9,80 @@ interface RoleEntryButtonsProps {
 
 export const RoleEntryButtons: React.FC<RoleEntryButtonsProps> = ({
   onSelectRole,
-}) => (
-  <View style={styles.wrapper}>
-    <Text style={styles.joinPrompt}>Join ATHAR as a</Text>
-    <View style={styles.row}>
-      <TouchableOpacity
-        style={styles.primaryBtn}
-        activeOpacity={0.85}
-        onPress={() => onSelectRole('VOLUNTEER')}
-      >
-        <Text style={styles.primaryTitle}>Volunteer</Text>
-        <Text style={styles.primarySub}>Contribute skills & time</Text>
-      </TouchableOpacity>
+}) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.wrapper}>
+      <Text style={[styles.joinPrompt, { color: colors.textSecondary }]}>انضم إلى منصة أثر كـ</Text>
+      <View style={styles.row}>
+        <TouchableOpacity
+          style={[styles.primaryBtn, { backgroundColor: colors.primary }]}
+          activeOpacity={0.85}
+          onPress={() => onSelectRole('VOLUNTEER')}
+        >
+          <Text style={[styles.primaryTitle, { color: colors.background }]}>متطوع</Text>
+          <Text style={[styles.primarySub, { color: colors.background }]}>ساهم بوقتك ومهاراتك</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.secondaryBtn}
-        activeOpacity={0.85}
-        onPress={() => onSelectRole('ORGANIZATION')}
-      >
-        <Text style={styles.secondaryTitle}>Organization</Text>
-        <Text style={styles.secondarySub}>Launch & manage projects</Text>
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.secondaryBtn, { backgroundColor: colors.surface, borderColor: colors.primary }]}
+          activeOpacity={0.85}
+          onPress={() => onSelectRole('ORGANIZATION')}
+        >
+          <Text style={[styles.secondaryTitle, { color: colors.text }]}>جمعية / منظمة</Text>
+          <Text style={[styles.secondarySub, { color: colors.textSecondary }]}>أنشئ وأدر الفرص التطوعية</Text>
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
-  wrapper: { gap: 12 },
+  wrapper: { gap: 10 },
   joinPrompt: {
     fontSize: 13,
-    fontWeight: '600',
-    color: COLORS.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 1.2,
+    fontWeight: '800',
     textAlign: 'center',
+    writingDirection: 'rtl',
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     gap: 12,
   },
   primaryBtn: {
     flex: 1,
-    backgroundColor: COLORS.primary,
-    paddingVertical: 18,
-    paddingHorizontal: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 16,
     alignItems: 'center',
   },
   primaryTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.background,
+    fontSize: 16.5,
+    fontWeight: '900',
   },
   primarySub: {
     fontSize: 11.5,
-    color: COLORS.background,
-    opacity: 0.85,
+    opacity: 0.9,
     marginTop: 4,
     textAlign: 'center',
+    fontWeight: '700',
   },
   secondaryBtn: {
     flex: 1,
-    backgroundColor: COLORS.surface,
     borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    paddingVertical: 18,
-    paddingHorizontal: 14,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
     borderRadius: 16,
     alignItems: 'center',
   },
   secondaryTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: COLORS.text,
+    fontSize: 16.5,
+    fontWeight: '900',
   },
   secondarySub: {
     fontSize: 11.5,
-    color: COLORS.textSecondary,
     marginTop: 4,
     textAlign: 'center',
+    fontWeight: '600',
   },
 });

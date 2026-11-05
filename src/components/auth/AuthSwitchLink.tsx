@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AuthSwitchLinkProps {
   promptText: string;
@@ -12,13 +12,16 @@ export const AuthSwitchLink: React.FC<AuthSwitchLinkProps> = ({
   promptText,
   actionText,
   onPress,
-}) => (
-  <TouchableOpacity style={styles.btn} onPress={onPress} activeOpacity={0.8}>
-    <Text style={styles.text}>
-      {promptText} <Text style={styles.accent}>{actionText}</Text>
-    </Text>
-  </TouchableOpacity>
-);
+}) => {
+  const { colors } = useTheme();
+  return (
+    <TouchableOpacity style={styles.btn} onPress={onPress} activeOpacity={0.8}>
+      <Text style={[styles.text, { color: colors.textSecondary }]}>
+        {promptText} <Text style={[styles.accent, { color: colors.primary }]}>{actionText}</Text>
+      </Text>
+    </TouchableOpacity>
+  );
+};
 
 const styles = StyleSheet.create({
   btn: {
@@ -27,11 +30,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   text: {
-    color: COLORS.textSecondary,
     fontSize: 14.5,
   },
   accent: {
-    color: COLORS.primary,
     fontWeight: '700',
   },
 });

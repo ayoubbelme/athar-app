@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { VolunteerStatsSummary } from '../../types/volunteer-home.types';
 
 interface VolunteerStatsRowProps {
@@ -10,6 +10,8 @@ interface VolunteerStatsRowProps {
 export const VolunteerStatsRow: React.FC<VolunteerStatsRowProps> = ({
   stats,
 }) => {
+  const { colors } = useTheme();
+
   const items = [
     {
       key: 'hours',
@@ -36,20 +38,20 @@ export const VolunteerStatsRow: React.FC<VolunteerStatsRowProps> = ({
 
   return (
     <View style={styles.section}>
-      <Text style={styles.sectionTitle}>ملخص نشاطك التطوعي</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>ملخص نشاطك التطوعي</Text>
       <View style={styles.row}>
         {items.map((item) => (
-          <View key={item.key} style={styles.statCard}>
-            <Text style={styles.statValue}>
+          <View key={item.key} style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <Text style={[styles.statValue, { color: colors.primary }]}>
               {item.value}
               {item.unit ? (
-                <Text style={styles.statUnit}> {item.unit}</Text>
+                <Text style={[styles.statUnit, { color: colors.primary }]}> {item.unit}</Text>
               ) : null}
             </Text>
-            <Text style={styles.statLabel} numberOfLines={1}>
+            <Text style={[styles.statLabel, { color: colors.text }]} numberOfLines={1}>
               {item.label}
             </Text>
-            <Text style={styles.statSub} numberOfLines={1}>
+            <Text style={[styles.statSub, { color: colors.textSecondary }]} numberOfLines={1}>
               {item.sub}
             </Text>
           </View>
@@ -64,7 +66,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text,
     marginBottom: 12,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -72,36 +73,30 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row-reverse', gap: 10 },
   statCard: {
     flex: 1,
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     paddingVertical: 16,
     paddingHorizontal: 8,
     borderWidth: 1,
-    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   statValue: {
     fontSize: 22,
     fontWeight: '900',
-    color: COLORS.primary,
     marginBottom: 4,
   },
   statUnit: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.primary,
   },
   statLabel: {
     fontSize: 13,
     fontWeight: '700',
-    color: COLORS.text,
     textAlign: 'center',
     writingDirection: 'rtl',
   },
   statSub: {
     fontSize: 11,
-    color: COLORS.textSecondary,
     marginTop: 2,
     textAlign: 'center',
     writingDirection: 'rtl',

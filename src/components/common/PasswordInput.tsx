@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PasswordInputProps extends TextInputProps {
   label: string;
@@ -19,44 +19,75 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   helperText,
   ...rest
 }) => {
+  const { colors } = useTheme();
   const [visible, setVisible] = useState(false);
 
   return (
     <View style={styles.fieldGroup}>
-      <Text style={styles.label}>{label}</Text>
-      <View style={styles.passwordContainer}>
+      <Text
+        style={{
+          fontSize: 13.5,
+          fontWeight: '700',
+          color: colors.text,
+          textAlign: 'right',
+          writingDirection: 'rtl',
+        }}
+      >
+        {label}
+      </Text>
+      <View
+        style={[
+          styles.passwordContainer,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+        ]}
+      >
         <TextInput
-          style={styles.passwordInput}
-          placeholderTextColor={COLORS.textSecondary}
+          style={[styles.passwordInput, { color: colors.text }]}
+          placeholderTextColor={colors.textSecondary}
           secureTextEntry={!visible}
           autoCapitalize="none"
+          textAlign="right"
           {...rest}
         />
         <TouchableOpacity
           onPress={() => setVisible((prev) => !prev)}
           style={styles.eyeBtn}
         >
-          <Text style={styles.eyeText}>{visible ? 'Hide' : 'Show'}</Text>
+          <Text style={[styles.eyeText, { color: colors.primary }]}>
+            {visible ? 'إخفاء' : 'إظهار'}
+          </Text>
         </TouchableOpacity>
       </View>
-      {helperText && <Text style={styles.helperText}>{helperText}</Text>}
+      {helperText && (
+        <Text
+          style={{
+            fontSize: 12,
+            color: colors.textSecondary,
+            marginTop: 2,
+            textAlign: 'right',
+            writingDirection: 'rtl',
+          }}
+        >
+          {helperText}
+        </Text>
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  fieldGroup: { gap: 6 },
-  label: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: COLORS.text,
+  fieldGroup: {
+    gap: 6,
+    alignItems: 'flex-end',
   },
   passwordContainer: {
-    flexDirection: 'row',
+    width: '100%',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 14,
   },
   passwordInput: {
@@ -64,20 +95,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 13,
     fontSize: 15,
-    color: COLORS.text,
+    writingDirection: 'rtl',
   },
   eyeBtn: {
     paddingHorizontal: 16,
     paddingVertical: 13,
   },
   eyeText: {
-    color: COLORS.primary,
-    fontWeight: '700',
+    fontWeight: '800',
     fontSize: 13,
-  },
-  helperText: {
-    fontSize: 12,
-    color: COLORS.textSecondary,
-    marginTop: 2,
   },
 });

@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { RewardTutorialItem } from '../../types/profile.types';
 
 interface MarketplaceRewardsSectionProps {
@@ -22,11 +22,13 @@ export const MarketplaceRewardsSection: React.FC<MarketplaceRewardsSectionProps>
   onRedeem,
   redeemingId,
 }) => {
+  const { colors } = useTheme();
+
   return (
     <View style={styles.section}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>متجر المكافآت والدورات التدريبية 🎁</Text>
-        <Text style={styles.sectionSubtitle}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>متجر المكافآت والدورات التدريبية 🎁</Text>
+        <Text style={[styles.sectionSubtitle, { color: colors.textSecondary }]}>
           استبدل نقاط أثرك بدورات تعليمية معتمدة ومكافآت مميزة
         </Text>
       </View>
@@ -37,39 +39,41 @@ export const MarketplaceRewardsSection: React.FC<MarketplaceRewardsSectionProps>
           const canAfford = currentScore >= tut.costScore;
 
           return (
-            <View key={tut.id} style={styles.card}>
+            <View key={tut.id} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.cardHeader}>
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{tut.category}</Text>
+                <View style={[styles.badge, { backgroundColor: colors.surfaceLight }]}>
+                  <Text style={[styles.badgeText, { color: colors.primary }]}>{tut.category}</Text>
                 </View>
-                <Text style={styles.cardTitle}>{tut.title}</Text>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>{tut.title}</Text>
               </View>
 
-              <Text style={styles.description}>{tut.description}</Text>
+              <Text style={[styles.description, { color: colors.textSecondary }]}>{tut.description}</Text>
 
               <View style={styles.cardFooter}>
-                <Text style={styles.duration}>⏱️ المدة: {tut.duration}</Text>
-                <View style={styles.costBox}>
-                  <Text style={styles.costText}>{tut.costScore} نقطة</Text>
+                <Text style={[styles.duration, { color: colors.textSecondary }]}>⏱️ المدة: {tut.duration}</Text>
+                <View style={[styles.costBox, { borderColor: colors.primary }]}>
+                  <Text style={[styles.costText, { color: colors.primary }]}>{tut.costScore} نقطة</Text>
                 </View>
               </View>
 
               <TouchableOpacity
                 style={[
                   styles.redeemBtn,
-                  (!canAfford || isRedeeming) && styles.redeemBtnDisabled,
+                  { backgroundColor: colors.primary },
+                  (!canAfford || isRedeeming) && [styles.redeemBtnDisabled, { backgroundColor: colors.surfaceLight, borderColor: colors.border }],
                 ]}
                 onPress={() => onRedeem(tut.id, tut.costScore)}
                 disabled={!canAfford || isRedeeming}
                 activeOpacity={0.85}
               >
                 {isRedeeming ? (
-                  <ActivityIndicator color={COLORS.background} size="small" />
+                  <ActivityIndicator color={colors.background} size="small" />
                 ) : (
                   <Text
                     style={[
                       styles.redeemBtnText,
-                      !canAfford && styles.redeemBtnTextDisabled,
+                      { color: colors.background },
+                      !canAfford && { color: colors.textSecondary },
                     ]}
                   >
                     {canAfford ? 'استبدال بالنقاط (فتح الدورة)' : 'نقاط غير كافية'}
@@ -95,13 +99,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   sectionSubtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -109,11 +111,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   card: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 12,
   },
   cardHeader: {
@@ -126,12 +126,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   badge: {
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 8,
@@ -139,11 +137,9 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 11,
     fontWeight: '700',
-    color: COLORS.primary,
   },
   description: {
     fontSize: 13.5,
-    color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -156,7 +152,6 @@ const styles = StyleSheet.create({
   },
   duration: {
     fontSize: 12.5,
-    color: COLORS.textSecondary,
     fontWeight: '600',
   },
   costBox: {
@@ -165,31 +160,22 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: COLORS.primary,
   },
   costText: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   redeemBtn: {
-    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 12,
     alignItems: 'center',
     marginTop: 4,
   },
   redeemBtnDisabled: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   redeemBtnText: {
-    color: COLORS.background,
     fontSize: 14,
     fontWeight: '800',
-  },
-  redeemBtnTextDisabled: {
-    color: COLORS.textSecondary,
   },
 });

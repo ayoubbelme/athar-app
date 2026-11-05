@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { UserProfileStats } from '../../types/profile.types';
 import { AppVectorIcon } from '../common/AppVectorIcon';
 
@@ -17,40 +17,41 @@ export const ProfileHeaderCard: React.FC<ProfileHeaderCardProps> = ({
   stats,
   onSignOut,
 }) => {
+  const { colors } = useTheme();
   const cleanRank = stats.rankTitle.replace(/[💎🥇🥈🌱⭐]/g, '').trim();
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
       <View style={styles.topRow}>
-        <TouchableOpacity style={styles.signOutBtn} onPress={onSignOut}>
-          <Text style={styles.signOutText}>تسجيل الخروج</Text>
+        <TouchableOpacity style={[styles.signOutBtn, { borderColor: colors.error }]} onPress={onSignOut}>
+          <Text style={[styles.signOutText, { color: colors.error }]}>تسجيل الخروج</Text>
         </TouchableOpacity>
         <View style={styles.userInfoCol}>
-          <Text style={styles.userName}>{userName}</Text>
-          <Text style={styles.userEmail}>{userEmail}</Text>
+          <Text style={[styles.userName, { color: colors.text }]}>{userName}</Text>
+          <Text style={[styles.userEmail, { color: colors.textSecondary }]}>{userEmail}</Text>
         </View>
-        <View style={styles.avatarCircle}>
-          <Text style={styles.avatarInitials}>
+        <View style={[styles.avatarCircle, { backgroundColor: colors.surfaceLight, borderColor: colors.primary }]}>
+          <Text style={[styles.avatarInitials, { color: colors.primary }]}>
             {userName ? userName.slice(0, 2).toUpperCase() : 'مت'}
           </Text>
         </View>
       </View>
 
-      <View style={styles.scoreBanner}>
+      <View style={[styles.scoreBanner, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
         <View style={styles.scoreCol}>
           <View style={styles.valueWithIconRow}>
-            <AppVectorIcon name="star" size={16} color={COLORS.primary} />
-            <Text style={styles.scoreNumber}>{stats.volunteerScore} نقطة</Text>
+            <AppVectorIcon name="star" size={16} color={colors.primary} />
+            <Text style={[styles.scoreNumber, { color: colors.primary }]}>{stats.volunteerScore} نقطة</Text>
           </View>
-          <Text style={styles.scoreLabel}>رصيد نقاط الأثر</Text>
+          <Text style={[styles.scoreLabel, { color: colors.textSecondary }]}>رصيد نقاط الأثر</Text>
         </View>
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
         <View style={styles.rankCol}>
           <View style={styles.valueWithIconRow}>
-            <AppVectorIcon name="trophy" size={15} color={COLORS.primary} />
-            <Text style={styles.rankText}>{cleanRank}</Text>
+            <AppVectorIcon name="trophy" size={15} color={colors.primary} />
+            <Text style={[styles.rankText, { color: colors.text }]}>{cleanRank}</Text>
           </View>
-          <Text style={styles.scoreLabel}>المستوى الحالي</Text>
+          <Text style={[styles.scoreLabel, { color: colors.textSecondary }]}>المستوى الحالي</Text>
         </View>
       </View>
     </View>
@@ -59,11 +60,9 @@ export const ProfileHeaderCard: React.FC<ProfileHeaderCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
     borderRadius: 20,
     padding: 20,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 16,
   },
   topRow: {
@@ -75,16 +74,13 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 2,
-    borderColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarInitials: {
     fontSize: 20,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   userInfoCol: {
     flex: 1,
@@ -94,36 +90,30 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
   },
   userEmail: {
     fontSize: 12.5,
-    color: COLORS.textSecondary,
     textAlign: 'right',
   },
   signOutBtn: {
     backgroundColor: 'rgba(255, 90, 95, 0.1)',
     borderWidth: 1,
-    borderColor: COLORS.error,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 10,
   },
   signOutText: {
-    color: COLORS.error,
     fontSize: 12,
     fontWeight: '700',
   },
   scoreBanner: {
     flexDirection: 'row-reverse',
-    backgroundColor: COLORS.surfaceLight,
     borderRadius: 14,
     padding: 14,
     alignItems: 'center',
     justifyContent: 'space-around',
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   scoreCol: {
     flex: 1,
@@ -137,17 +127,14 @@ const styles = StyleSheet.create({
   scoreNumber: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   scoreLabel: {
     fontSize: 11.5,
-    color: COLORS.textSecondary,
     marginTop: 2,
   },
   divider: {
     width: 1,
     height: 32,
-    backgroundColor: COLORS.border,
   },
   rankCol: {
     flex: 1,
@@ -156,7 +143,6 @@ const styles = StyleSheet.create({
   rankText: {
     fontSize: 14.5,
     fontWeight: '700',
-    color: COLORS.text,
     textAlign: 'center',
   },
 });

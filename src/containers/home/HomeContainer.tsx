@@ -20,7 +20,7 @@ import {
   VolunteerStatsSummary,
 } from '../../types/volunteer-home.types';
 import { useAuth } from '../../context/AuthContext';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { HomeTopHeader } from '../../components/home/HomeTopHeader';
 import { BestSkillChanceCard } from '../../components/home/BestSkillChanceCard';
@@ -31,6 +31,7 @@ import { UserProfileCard } from '../../components/home/UserProfileCard';
 export const HomeContainer: React.FC = () => {
   const navigation = useNavigation<any>();
   const { user, signOut } = useAuth();
+  const { colors } = useTheme();
 
   const [recommendations, setRecommendations] = useState<RecommendedProject[]>(
     [],
@@ -120,7 +121,7 @@ export const HomeContainer: React.FC = () => {
 
   if (user.role !== 'VOLUNTEER') {
     return (
-      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+      <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
         <View style={styles.orgFallback}>
           <UserProfileCard user={user} onSignOut={signOut} />
         </View>
@@ -135,7 +136,7 @@ export const HomeContainer: React.FC = () => {
     recommendations.length > 1 ? recommendations.slice(1) : [];
 
   return (
-    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={['top', 'left', 'right']}>
       <StatusBar barStyle="light-content" />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -143,8 +144,8 @@ export const HomeContainer: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadDashboardData(true)}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
@@ -159,7 +160,7 @@ export const HomeContainer: React.FC = () => {
 
         {loading ? (
           <View style={styles.loaderBox}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
           <>
@@ -189,7 +190,6 @@ export const HomeContainer: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   scrollContent: {
     flexGrow: 1,

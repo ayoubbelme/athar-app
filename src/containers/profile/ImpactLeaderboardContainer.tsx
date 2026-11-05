@@ -18,7 +18,7 @@ import {
   ImpactLeaderboardData,
   LeaderboardEntry,
 } from '../../types/profile.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { SideBurgerMenuModal } from '../../components/common/SideBurgerMenuModal';
 import { AppVectorIcon } from '../../components/common/AppVectorIcon';
@@ -27,6 +27,7 @@ import { LeaderboardSkeleton } from '../../components/common/AppSkeleton';
 type LeaderboardTabMode = 'NEARBY' | 'TOP';
 
 export const ImpactLeaderboardContainer: React.FC = () => {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
   const { user, signOut } = useAuth();
 
@@ -91,7 +92,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         <AppVectorIcon
           name="crown"
           size={17}
-          color={isCurrent ? COLORS.background : '#FFC107'}
+          color={isCurrent ? colors.background : '#FFC107'}
         />
       );
     }
@@ -100,7 +101,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         <AppVectorIcon
           name="trophy"
           size={16}
-          color={isCurrent ? COLORS.background : '#CBD5E1'}
+          color={isCurrent ? colors.background : '#CBD5E1'}
         />
       );
     }
@@ -109,7 +110,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         <AppVectorIcon
           name="trophy"
           size={16}
-          color={isCurrent ? COLORS.background : '#D97706'}
+          color={isCurrent ? colors.background : '#D97706'}
         />
       );
     }
@@ -117,7 +118,8 @@ export const ImpactLeaderboardContainer: React.FC = () => {
       <Text
         style={[
           styles.rankNumberText,
-          isCurrent && { color: COLORS.background },
+          { color: colors.text },
+          isCurrent && { color: colors.background },
         ]}
       >
         #{rank}
@@ -147,7 +149,15 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         key={item.userId}
         style={[
           styles.rowCard,
-          item.isCurrentUser && styles.rowCardCurrentUser,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+          },
+          item.isCurrentUser && {
+            backgroundColor: 'rgba(0, 186, 102, 0.14)',
+            borderColor: colors.primary,
+            borderWidth: 1.5,
+          },
           item.rank === 1 && !item.isCurrentUser && styles.rowCardFirstPlace,
         ]}
       >
@@ -155,7 +165,8 @@ export const ImpactLeaderboardContainer: React.FC = () => {
           <View
             style={[
               styles.rankBadgeBox,
-              item.isCurrentUser && styles.rankBadgeBoxCurrent,
+              { backgroundColor: colors.surfaceLight },
+              item.isCurrentUser && { backgroundColor: colors.primary },
             ]}
           >
             {renderRankBadge(item.rank, item.isCurrentUser)}
@@ -164,10 +175,19 @@ export const ImpactLeaderboardContainer: React.FC = () => {
           <View
             style={[
               styles.rowAvatar,
-              item.isCurrentUser && styles.rowAvatarCurrent,
+              {
+                backgroundColor: colors.surfaceLight,
+                borderColor: colors.border,
+              },
+              item.isCurrentUser && {
+                borderColor: colors.primary,
+                backgroundColor: colors.surface,
+              },
             ]}
           >
-            <Text style={styles.rowAvatarText}>{initials}</Text>
+            <Text style={[styles.rowAvatarText, { color: colors.primary }]}>
+              {initials}
+            </Text>
           </View>
 
           <View style={styles.rowInfoCol}>
@@ -175,20 +195,21 @@ export const ImpactLeaderboardContainer: React.FC = () => {
               <Text
                 style={[
                   styles.rowName,
-                  item.isCurrentUser && styles.rowNameCurrent,
+                  { color: colors.text },
+                  item.isCurrentUser && { color: colors.primary, fontWeight: '900' },
                 ]}
                 numberOfLines={1}
               >
                 {item.name}
               </Text>
               {item.isCurrentUser && (
-                <View style={styles.youTag}>
-                  <Text style={styles.youTagText}>أنت</Text>
+                <View style={[styles.youTag, { backgroundColor: colors.primary }]}>
+                  <Text style={[styles.youTagText, { color: colors.background }]}>أنت</Text>
                 </View>
               )}
             </View>
 
-            <Text style={styles.rowSubMeta} numberOfLines={1}>
+            <Text style={[styles.rowSubMeta, { color: colors.textSecondary }]} numberOfLines={1}>
               {item.hoursCount} ساعة • {item.completedProjectsCount} مشاريع
               {item.location ? ` • ${item.location}` : ''}
             </Text>
@@ -197,7 +218,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
               <Text
                 style={[
                   styles.gapHintText,
-                  scoreDiff > 0 ? styles.gapAboveText : styles.gapBelowText,
+                  scoreDiff > 0 ? styles.gapAboveText : { color: colors.primary },
                 ]}
               >
                 {scoreDiff > 0
@@ -213,13 +234,15 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         <View
           style={[
             styles.scorePill,
-            item.isCurrentUser && styles.scorePillCurrent,
+            { backgroundColor: colors.surfaceLight, borderColor: colors.border },
+            item.isCurrentUser && { backgroundColor: colors.primary, borderColor: colors.primary },
           ]}
         >
           <Text
             style={[
               styles.scorePillValue,
-              item.isCurrentUser && styles.scorePillValueCurrent,
+              { color: colors.primary },
+              item.isCurrentUser && { color: colors.background },
             ]}
           >
             {item.impactScore}
@@ -227,7 +250,8 @@ export const ImpactLeaderboardContainer: React.FC = () => {
           <Text
             style={[
               styles.scorePillUnit,
-              item.isCurrentUser && styles.scorePillValueCurrent,
+              { color: colors.textSecondary },
+              item.isCurrentUser && { color: colors.background },
             ]}
           >
             نقطة
@@ -239,33 +263,63 @@ export const ImpactLeaderboardContainer: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={styles.container}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['top', 'bottom', 'left', 'right']}
     >
       <StatusBar barStyle="light-content" />
 
-      <View style={styles.topNav}>
+      <View
+        style={{
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 18,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.surface,
+        }}
+      >
         <TouchableOpacity
-          style={styles.burgerBtn}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            backgroundColor: colors.surfaceLight,
+            borderWidth: 1.5,
+            borderColor: colors.primary,
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 4,
+          }}
           onPress={() => setMenuOpen(true)}
           activeOpacity={0.8}
         >
-          <View style={styles.burgerLine} />
-          <View style={[styles.burgerLine, styles.burgerLineMiddle]} />
-          <View style={styles.burgerLine} />
+          <View style={[styles.burgerLine, { backgroundColor: colors.primary }]} />
+          <View style={[styles.burgerLine, styles.burgerLineMiddle, { backgroundColor: colors.primary }]} />
+          <View style={[styles.burgerLine, { backgroundColor: colors.primary }]} />
         </TouchableOpacity>
 
         <View style={styles.navTitleRow}>
-          <AppVectorIcon name="trophy" size={18} color={COLORS.primary} />
-          <Text style={styles.navTitle}>لوحة الصدارة وترتيب الأثر</Text>
+          <AppVectorIcon name="trophy" size={18} color={colors.primary} />
+          <Text style={{ fontSize: 16, fontWeight: '900', color: colors.text }}>
+            لوحة الصدارة وترتيب الأثر
+          </Text>
         </View>
 
         <TouchableOpacity
-          style={styles.backBtn}
+          style={{
+            backgroundColor: colors.surfaceLight,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Text style={styles.backBtnText}>رجوع</Text>
+          <Text style={{ color: colors.text, fontSize: 13.5, fontWeight: '700' }}>رجوع</Text>
         </TouchableOpacity>
       </View>
 
@@ -275,8 +329,8 @@ export const ImpactLeaderboardContainer: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadLeaderboard(true)}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
@@ -285,62 +339,116 @@ export const ImpactLeaderboardContainer: React.FC = () => {
         {loading ? (
   <LeaderboardSkeleton />
 ) :!myEntry || topList.length === 0 ? (
-          <View style={styles.emptyBox}>
-            <Text style={styles.emptyTitle}>
+          <View
+            style={{
+              backgroundColor: colors.surface,
+              borderRadius: 18,
+              padding: 24,
+              borderWidth: 1,
+              borderColor: colors.border,
+              alignItems: 'center',
+            }}
+          >
+            <Text
+              style={{ fontSize: 15, fontWeight: '800', color: colors.textSecondary, textAlign: 'center' }}
+            >
               لا يوجد متطوعون مسجلون في قاعدة البيانات حالياً
             </Text>
           </View>
         ) : (
           <>
-            <View style={styles.myRankHeroCard}>
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 22,
+                padding: 18,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+                gap: 14,
+              }}
+            >
               <View style={styles.myRankTopRow}>
-                <View style={styles.myRankCircle}>
-                  <Text style={styles.myRankCircleLabel}>الترتيب</Text>
-                  <Text style={styles.myRankCircleValue}>#{myEntry.rank}</Text>
+                <View
+                  style={{
+                    width: 68,
+                    height: 68,
+                    borderRadius: 20,
+                    backgroundColor: colors.primary,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <Text
+                    style={{ fontSize: 10.5, fontWeight: '800', color: colors.background, opacity: 0.9 }}
+                  >
+                    الترتيب
+                  </Text>
+                  <Text style={{ fontSize: 22, fontWeight: '900', color: colors.background }}>
+                    #{myEntry.rank}
+                  </Text>
                 </View>
 
                 <View style={styles.myRankTextCol}>
-                  <Text style={styles.myRankGreeting}>
+                  <Text style={{ fontSize: 13, fontWeight: '700', color: colors.textSecondary }}>
                     مركزك الفعلي في قاعدة بيانات أثر
                   </Text>
-                  <Text style={styles.myRankBadgeTitle}>
+                  <Text
+                    style={{ fontSize: 17.5, fontWeight: '900', color: colors.text, textAlign: 'right' }}
+                  >
                     {myEntry.rankTitle.replace(/[💎🥇🥈🌱⭐]/g, '').trim()}
                   </Text>
-                  <Text style={styles.myRankTotalSub}>
+                  <Text style={{ fontSize: 12, fontWeight: '600', color: colors.primary }}>
                     إجمالي المتطوعين المسجلين:{' '}
                     {data?.totalVolunteers ?? topList.length}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.myStatsMiniRow}>
+              <View
+                style={{
+                  flexDirection: 'row-reverse',
+                  backgroundColor: colors.surfaceLight,
+                  borderRadius: 14,
+                  paddingVertical: 12,
+                  paddingHorizontal: 8,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  alignItems: 'center',
+                }}
+              >
                 <View style={styles.miniStatBox}>
-                  <Text style={styles.miniStatValue}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.primary }}>
                     {myEntry.impactScore}
                   </Text>
-                  <Text style={styles.miniStatLabel}>نقاط أثرك</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                    نقاط أثرك
+                  </Text>
                 </View>
-                <View style={styles.miniStatDivider} />
+                <View style={[styles.miniStatDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.miniStatBox}>
-                  <Text style={styles.miniStatValue}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.primary }}>
                     {myEntry.hoursCount} س
                   </Text>
-                  <Text style={styles.miniStatLabel}>ساعات معتمدة</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                    ساعات معتمدة
+                  </Text>
                 </View>
-                <View style={styles.miniStatDivider} />
+                <View style={[styles.miniStatDivider, { backgroundColor: colors.border }]} />
                 <View style={styles.miniStatBox}>
-                  <Text style={styles.miniStatValue}>
+                  <Text style={{ fontSize: 16, fontWeight: '900', color: colors.primary }}>
                     {myEntry.completedProjectsCount}
                   </Text>
-                  <Text style={styles.miniStatLabel}>مهام مكتملة</Text>
+                  <Text style={{ fontSize: 11, fontWeight: '700', color: colors.textSecondary }}>
+                    مهام مكتملة
+                  </Text>
                 </View>
               </View>
 
               {nextTargetAbove ? (
                 <View style={styles.nextTargetBanner}>
-                  <Text style={styles.nextTargetText}>
+                  <Text style={[styles.nextTargetText, { color: colors.text }]}>
                     يفصلك{' '}
-                    <Text style={styles.nextTargetHighlight}>
+                    <Text style={{ color: colors.primary, fontWeight: '900' }}>
                       {pointsToNextRank} نقطة
                     </Text>{' '}
                     فقط لتجاوز ({nextTargetAbove.name}) والوصول إلى المركز #
@@ -349,7 +457,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                 </View>
               ) : (
                 <View style={styles.nextTargetBanner}>
-                  <Text style={styles.nextTargetText}>
+                  <Text style={[styles.nextTargetText, { color: colors.text }]}>
                     أنت في صدارة متطوعي منصة أثر! واصل عطاءك المتميز.
                   </Text>
                 </View>
@@ -357,10 +465,21 @@ export const ImpactLeaderboardContainer: React.FC = () => {
             </View>
 
             {firstPlace && (
-              <View style={styles.podiumSection}>
+              <View
+                style={{
+                  backgroundColor: colors.surface,
+                  borderRadius: 22,
+                  paddingTop: 18,
+                  paddingHorizontal: 14,
+                  paddingBottom: 0,
+                  borderWidth: 1,
+                  borderColor: colors.border,
+                  overflow: 'hidden',
+                }}
+              >
                 <View style={styles.podiumHeaderRow}>
                   <AppVectorIcon name="crown" size={18} color="#FFC107" />
-                  <Text style={styles.sectionTitle}>
+                  <Text style={{ fontSize: 17.5, fontWeight: '900', color: colors.text, textAlign: 'right', writingDirection: 'rtl' }}>
                     منصة التتويج لأبطال الأثر
                   </Text>
                 </View>
@@ -370,18 +489,18 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                     <View style={styles.podiumCol}>
                       <AppVectorIcon name="trophy" size={16} color="#CBD5E1" />
                       <View style={[styles.podiumAvatar, styles.podiumSilver]}>
-                        <Text style={styles.podiumAvatarText}>
+                        <Text style={[styles.podiumAvatarText, { color: colors.text }]}>
                           {secondPlace.name.slice(0, 2)}
                         </Text>
                       </View>
-                      <Text style={styles.podiumName} numberOfLines={1}>
+                      <Text style={[styles.podiumName, { color: colors.text }]} numberOfLines={1}>
                         {secondPlace.name}
                       </Text>
-                      <Text style={styles.podiumScore}>
+                      <Text style={[styles.podiumScore, { color: colors.textSecondary }]}>
                         {secondPlace.impactScore} نقطة
                       </Text>
-                      <View style={[styles.podiumPedestal, styles.pedestal2]}>
-                        <Text style={styles.pedestalNumber}>2</Text>
+                      <View style={[styles.podiumPedestal, styles.pedestal2, { backgroundColor: colors.surfaceLight }]}>
+                        <Text style={[styles.pedestalNumber, { color: colors.textSecondary }]}>2</Text>
                       </View>
                     </View>
                   ) : (
@@ -398,11 +517,11 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                     <Text style={styles.podiumNameGold} numberOfLines={1}>
                       {firstPlace.name}
                     </Text>
-                    <Text style={styles.podiumScoreGold}>
+                    <Text style={[styles.podiumScoreGold, { color: colors.primary }]}>
                       {firstPlace.impactScore} نقطة
                     </Text>
-                    <View style={[styles.podiumPedestal, styles.pedestal1]}>
-                      <Text style={styles.pedestalNumberGold}>1</Text>
+                    <View style={[styles.podiumPedestal, styles.pedestal1, { borderColor: colors.primary }]}>
+                      <Text style={[styles.pedestalNumberGold, { color: colors.primary }]}>1</Text>
                     </View>
                   </View>
 
@@ -410,18 +529,18 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                     <View style={styles.podiumCol}>
                       <AppVectorIcon name="trophy" size={16} color="#D97706" />
                       <View style={[styles.podiumAvatar, styles.podiumBronze]}>
-                        <Text style={styles.podiumAvatarText}>
+                        <Text style={[styles.podiumAvatarText, { color: colors.text }]}>
                           {thirdPlace.name.slice(0, 2)}
                         </Text>
                       </View>
-                      <Text style={styles.podiumName} numberOfLines={1}>
+                      <Text style={[styles.podiumName, { color: colors.text }]} numberOfLines={1}>
                         {thirdPlace.name}
                       </Text>
-                      <Text style={styles.podiumScore}>
+                      <Text style={[styles.podiumScore, { color: colors.textSecondary }]}>
                         {thirdPlace.impactScore} نقطة
                       </Text>
-                      <View style={[styles.podiumPedestal, styles.pedestal3]}>
-                        <Text style={styles.pedestalNumber}>3</Text>
+                      <View style={[styles.podiumPedestal, styles.pedestal3, { backgroundColor: colors.surfaceLight }]}>
+                        <Text style={[styles.pedestalNumber, { color: colors.textSecondary }]}>3</Text>
                       </View>
                     </View>
                   ) : (
@@ -431,11 +550,21 @@ export const ImpactLeaderboardContainer: React.FC = () => {
               </View>
             )}
 
-            <View style={styles.tabsContainer}>
+            <View
+              style={{
+                flexDirection: 'row-reverse',
+                backgroundColor: colors.surface,
+                borderRadius: 16,
+                padding: 5,
+                borderWidth: 1,
+                borderColor: colors.border,
+                gap: 6,
+              }}
+            >
               <TouchableOpacity
                 style={[
                   styles.tabBtn,
-                  activeTab === 'NEARBY' && styles.tabBtnActive,
+                  activeTab === 'NEARBY' && { backgroundColor: colors.primary },
                 ]}
                 onPress={() => setActiveTab('NEARBY')}
                 activeOpacity={0.85}
@@ -445,14 +574,15 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                   size={14}
                   color={
                     activeTab === 'NEARBY'
-                      ? COLORS.background
-                      : COLORS.textSecondary
+                      ? colors.background
+                      : colors.textSecondary
                   }
                 />
                 <Text
                   style={[
                     styles.tabBtnText,
-                    activeTab === 'NEARBY' && styles.tabBtnTextActive,
+                    { color: colors.textSecondary },
+                    activeTab === 'NEARBY' && { color: colors.background, fontWeight: '900' },
                   ]}
                 >
                   قريبون من أثرك ({nearbyList.length})
@@ -462,7 +592,7 @@ export const ImpactLeaderboardContainer: React.FC = () => {
               <TouchableOpacity
                 style={[
                   styles.tabBtn,
-                  activeTab === 'TOP' && styles.tabBtnActive,
+                  activeTab === 'TOP' && { backgroundColor: colors.primary },
                 ]}
                 onPress={() => setActiveTab('TOP')}
                 activeOpacity={0.85}
@@ -472,14 +602,15 @@ export const ImpactLeaderboardContainer: React.FC = () => {
                   size={14}
                   color={
                     activeTab === 'TOP'
-                      ? COLORS.background
-                      : COLORS.textSecondary
+                      ? colors.background
+                      : colors.textSecondary
                   }
                 />
                 <Text
                   style={[
                     styles.tabBtnText,
-                    activeTab === 'TOP' && styles.tabBtnTextActive,
+                    { color: colors.textSecondary },
+                    activeTab === 'TOP' && { color: colors.background, fontWeight: '900' },
                   ]}
                 >
                   جميع المتطوعين ({topList.length})
@@ -490,10 +621,10 @@ export const ImpactLeaderboardContainer: React.FC = () => {
             {activeTab === 'NEARBY' ? (
               <View style={styles.listSection}>
                 <View style={styles.listHeaderBox}>
-                  <Text style={styles.sectionTitle}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
                     متطوعون قريبون من مستوى أثرك
                   </Text>
-                  <Text style={styles.sectionSub}>
+                  <Text style={[styles.sectionSub, { color: colors.textSecondary }]}>
                     المتطوعون المسجلون الأقرب لنقاط أثرك الحالية في قاعدة البيانات
                   </Text>
                 </View>
@@ -505,10 +636,10 @@ export const ImpactLeaderboardContainer: React.FC = () => {
             ) : (
               <View style={styles.listSection}>
                 <View style={styles.listHeaderBox}>
-                  <Text style={styles.sectionTitle}>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
                     ترتيب المتطوعين الأعلى أثراً
                   </Text>
-                  <Text style={styles.sectionSub}>
+                  <Text style={[styles.sectionSub, { color: colors.textSecondary }]}>
                     جميع المتطوعين المسجلين مرتبين حسب الساعات والمشاريع المعتمدة
                   </Text>
                 </View>
@@ -541,36 +672,15 @@ export const ImpactLeaderboardContainer: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  topNav: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.surface,
-  },
-  burgerBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 12,
-    backgroundColor: COLORS.surfaceLight,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
+  scrollContent: {
+    padding: 20,
+    gap: 20,
+    paddingBottom: 40,
   },
   burgerLine: {
     width: 18,
     height: 2.2,
     borderRadius: 2,
-    backgroundColor: COLORS.primary,
   },
   burgerLineMiddle: {
     width: 13,
@@ -581,130 +691,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  backBtn: {
-    backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backBtnText: {
-    color: COLORS.text,
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  navTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.text,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 20,
-    paddingBottom: 40,
-  },
-  loaderBox: {
-    paddingVertical: 90,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyBox: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 18,
-    padding: 24,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: COLORS.textSecondary,
-    textAlign: 'center',
-  },
-  myRankHeroCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 22,
-    padding: 18,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    gap: 14,
-  },
   myRankTopRow: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 14,
-  },
-  myRankCircle: {
-    width: 68,
-    height: 68,
-    borderRadius: 20,
-    backgroundColor: COLORS.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  myRankCircleLabel: {
-    fontSize: 10.5,
-    fontWeight: '800',
-    color: COLORS.background,
-    opacity: 0.9,
-  },
-  myRankCircleValue: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: COLORS.background,
   },
   myRankTextCol: {
     flex: 1,
     alignItems: 'flex-end',
     gap: 3,
   },
-  myRankGreeting: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  myRankBadgeTitle: {
-    fontSize: 17.5,
-    fontWeight: '900',
-    color: COLORS.text,
-    textAlign: 'right',
-  },
-  myRankTotalSub: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: COLORS.primary,
-  },
-  myStatsMiniRow: {
-    flexDirection: 'row-reverse',
-    backgroundColor: COLORS.surfaceLight,
-    borderRadius: 14,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    alignItems: 'center',
-  },
   miniStatBox: {
     flex: 1,
     alignItems: 'center',
     gap: 2,
   },
-  miniStatValue: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: COLORS.primary,
-  },
-  miniStatLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
   miniStatDivider: {
     width: 1,
     height: 26,
-    backgroundColor: COLORS.border,
   },
   nextTargetBanner: {
     backgroundColor: 'rgba(0, 186, 102, 0.12)',
@@ -716,25 +720,10 @@ const styles = StyleSheet.create({
   },
   nextTargetText: {
     fontSize: 12.5,
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 19,
     fontWeight: '600',
-  },
-  nextTargetHighlight: {
-    color: COLORS.primary,
-    fontWeight: '900',
-  },
-  podiumSection: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 22,
-    paddingTop: 18,
-    paddingHorizontal: 14,
-    paddingBottom: 0,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    overflow: 'hidden',
   },
   podiumHeaderRow: {
     flexDirection: 'row-reverse',
@@ -782,7 +771,6 @@ const styles = StyleSheet.create({
   podiumAvatarText: {
     fontSize: 15,
     fontWeight: '800',
-    color: COLORS.text,
   },
   podiumAvatarTextGold: {
     fontSize: 18,
@@ -792,7 +780,6 @@ const styles = StyleSheet.create({
   podiumName: {
     fontSize: 12.5,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'center',
   },
   podiumNameGold: {
@@ -804,13 +791,11 @@ const styles = StyleSheet.create({
   podiumScore: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
     marginBottom: 6,
   },
   podiumScoreGold: {
     fontSize: 12.5,
     fontWeight: '900',
-    color: COLORS.primary,
     marginBottom: 6,
   },
   podiumPedestal: {
@@ -824,38 +809,25 @@ const styles = StyleSheet.create({
     height: 66,
     backgroundColor: 'rgba(0, 186, 102, 0.24)',
     borderTopWidth: 2,
-    borderColor: COLORS.primary,
+    borderColor: '#00BA66',
   },
   pedestal2: {
     height: 48,
-    backgroundColor: COLORS.surfaceLight,
     borderTopWidth: 1.5,
     borderColor: '#CBD5E1',
   },
   pedestal3: {
     height: 38,
-    backgroundColor: COLORS.surfaceLight,
     borderTopWidth: 1.5,
     borderColor: '#D97706',
   },
   pedestalNumber: {
     fontSize: 17,
     fontWeight: '900',
-    color: COLORS.textSecondary,
   },
   pedestalNumberGold: {
     fontSize: 22,
     fontWeight: '900',
-    color: COLORS.primary,
-  },
-  tabsContainer: {
-    flexDirection: 'row-reverse',
-    backgroundColor: COLORS.surface,
-    borderRadius: 16,
-    padding: 5,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    gap: 6,
   },
   tabBtn: {
     flex: 1,
@@ -866,17 +838,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tabBtnActive: {
-    backgroundColor: COLORS.primary,
-  },
   tabBtnText: {
     fontSize: 13,
     fontWeight: '800',
-    color: COLORS.textSecondary,
-  },
-  tabBtnTextActive: {
-    color: COLORS.background,
-    fontWeight: '900',
   },
   listSection: {
     gap: 12,
@@ -888,13 +852,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 17.5,
     fontWeight: '900',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   sectionSub: {
     fontSize: 12.5,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -905,17 +867,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 13,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 10,
-  },
-  rowCardCurrentUser: {
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
-    borderColor: COLORS.primary,
-    borderWidth: 1.5,
   },
   rowCardFirstPlace: {
     borderColor: 'rgba(255, 193, 7, 0.5)',
@@ -930,36 +885,24 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 10,
-    backgroundColor: COLORS.surfaceLight,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  rankBadgeBoxCurrent: {
-    backgroundColor: COLORS.primary,
   },
   rankNumberText: {
     fontSize: 13,
     fontWeight: '900',
-    color: COLORS.text,
   },
   rowAvatar: {
     width: 42,
     height: 42,
     borderRadius: 21,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  rowAvatarCurrent: {
-    borderColor: COLORS.primary,
-    backgroundColor: COLORS.surface,
   },
   rowAvatarText: {
     fontSize: 14,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   rowInfoCol: {
     flex: 1,
@@ -974,15 +917,9 @@ const styles = StyleSheet.create({
   rowName: {
     fontSize: 15,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
   },
-  rowNameCurrent: {
-    color: COLORS.primary,
-    fontWeight: '900',
-  },
   youTag: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 7,
     paddingVertical: 1.5,
     borderRadius: 6,
@@ -990,11 +927,9 @@ const styles = StyleSheet.create({
   youTagText: {
     fontSize: 10.5,
     fontWeight: '900',
-    color: COLORS.background,
   },
   rowSubMeta: {
     fontSize: 11.5,
-    color: COLORS.textSecondary,
     textAlign: 'right',
   },
   gapHintText: {
@@ -1005,34 +940,20 @@ const styles = StyleSheet.create({
   gapAboveText: {
     color: '#FFC107',
   },
-  gapBelowText: {
-    color: COLORS.primary,
-  },
   scorePill: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 11,
     paddingVertical: 7,
     borderRadius: 12,
     alignItems: 'center',
     minWidth: 68,
   },
-  scorePillCurrent: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
   scorePillValue: {
     fontSize: 15,
     fontWeight: '900',
-    color: COLORS.primary,
   },
   scorePillUnit: {
     fontSize: 10,
     fontWeight: '700',
-    color: COLORS.textSecondary,
-  },
-  scorePillValueCurrent: {
-    color: COLORS.background,
   },
 });

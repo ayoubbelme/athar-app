@@ -42,25 +42,25 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
   const validateClientSide = (): string | null => {
     const trimmedName = name.trim();
     if (trimmedName.length < 2 || trimmedName.length > 100) {
-      return 'Name must be between 2 and 100 characters.';
+      return 'يجب أن يتراوح الاسم بين حرفين و100 حرف.';
     }
     if (role === 'ORGANIZATION') {
       const trimmedOrg = organizationName.trim();
       if (!trimmedOrg) {
-        return 'Organization name is required for organization accounts.';
+        return 'اسم الجمعية أو المنظمة مطلوب لإنشاء حساب جمعية.';
       }
       if (trimmedOrg.length > 150) {
-        return 'Organization name cannot exceed 150 characters.';
+        return 'اسم الجمعية لا يمكن أن يتجاوز 150 حرفاً.';
       }
     }
     if (!email.trim().includes('@')) {
-      return 'Please enter a valid email address.';
+      return 'يرجى إدخال عنوان بريد إلكتروني صحيح.';
     }
     if (password.length < 8 || password.length > 128) {
-      return 'Password must be at least 8 characters long.';
+      return 'يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.';
     }
     if (!PASSWORD_REGEX.test(password)) {
-      return 'Password must contain at least one letter and one number.';
+      return 'يجب أن تحتوي كلمة المرور على حرف واحد ورقم واحد على الأقل.';
     }
     return null;
   };
@@ -98,8 +98,8 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
   return (
     <ScreenLayout onBack={() => navigation.goBack()}>
       <AuthHeader
-        title="Create Account"
-        subtitle="Join ATHAR and start building measurable community impact."
+        title="إنشاء حساب جديد"
+        subtitle="انضم إلى مجتمع أثر وابدأ في بناء أثر تطوعي ومجتمعي ملموس."
       />
 
       <RoleTabs selectedRole={role} onChangeRole={handleRoleChange} />
@@ -110,10 +110,10 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
         <AppInput
           label={
             role === 'ORGANIZATION'
-              ? 'Representative Full Name *'
-              : 'Full Name *'
+              ? 'الاسم الكامل لممثل الجمعية *'
+              : 'الاسم الكامل *'
           }
-          placeholder="Amina Benali"
+          placeholder="مثال: أمينة بن علي"
           value={name}
           onChangeText={setName}
           maxLength={100}
@@ -121,8 +121,8 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
 
         {role === 'ORGANIZATION' && (
           <AppInput
-            label="Organization Name *"
-            placeholder="Green Hands Association"
+            label="اسم الجمعية أو المنظمة *"
+            placeholder="مثال: جمعية الأيادي الخضراء"
             value={organizationName}
             onChangeText={setOrganizationName}
             maxLength={150}
@@ -130,7 +130,7 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
         )}
 
         <AppInput
-          label="Email Address *"
+          label="البريد الإلكتروني *"
           placeholder="amina@example.com"
           value={email}
           onChangeText={setEmail}
@@ -140,26 +140,26 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
         />
 
         <AppInput
-          label="City / Location (Optional)"
-          placeholder="e.g. Algiers, Blida, Oran"
+          label="المدينة / الولاية (اختياري)"
+          placeholder="مثال: الجزائر العاصمة، البليدة، المدية"
           value={location}
           onChangeText={setLocation}
           maxLength={100}
         />
 
         <PasswordInput
-          label="Password *"
-          placeholder="Min 8 chars, 1 letter & 1 number"
+          label="كلمة المرور *"
+          placeholder="8 أحرف على الأقل، تشمل حرفاً ورقماً"
           value={password}
           onChangeText={setPassword}
-          helperText="Must be at least 8 characters and include a letter and a digit."
+          helperText="يجب أن تتكون من 8 أحرف على الأقل وتضم حرفاً ورقماً."
         />
 
         <AppButton
           title={
             role === 'ORGANIZATION'
-              ? 'Register Organization'
-              : 'Join as Volunteer'
+              ? 'تسجيل حساب الجمعية'
+              : 'الانضمام كمتطوع'
           }
           onPress={handleRegister}
           loading={loading}
@@ -167,8 +167,8 @@ export const SignUpContainer: React.FC<SignUpContainerProps> = ({
       </View>
 
       <AuthSwitchLink
-        promptText="Already have an account?"
-        actionText="Sign In"
+        promptText="لديك حساب بالفعل؟"
+        actionText="تسجيل الدخول"
         onPress={() => navigation.navigate('Login')}
       />
     </ScreenLayout>

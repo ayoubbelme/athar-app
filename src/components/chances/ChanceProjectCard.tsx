@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ChanceCardViewModel } from '../../types/chances.types';
 import {
   translateCategory,
@@ -28,6 +28,7 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
   onPressDetails,
   applyingId,
 }) => {
+  const { colors } = useTheme();
   const { project, matchScore, alreadyApplied } = item;
   const isApplying = applyingId === project.id;
   const isOpen = project.status === 'PUBLISHED';
@@ -39,16 +40,31 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
   const skillsList = Array.isArray(project.skills) ? project.skills : [];
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        { backgroundColor: colors.surface, borderColor: colors.border },
+      ]}
+    >
       <View style={styles.headerRow}>
         <View style={styles.titleCol}>
           <View style={styles.orgRow}>
-            <Text style={styles.orgName}>
+            <Text style={[styles.orgName, { color: colors.primary }]}>
               {project.organization?.name ?? 'جمعية'}
             </Text>
             {project.category && (
-              <View style={styles.categoryBadge}>
-                <Text style={styles.categoryBadgeText}>
+              <View
+                style={[
+                  styles.categoryBadge,
+                  { backgroundColor: colors.surfaceLight },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryBadgeText,
+                    { color: colors.textSecondary },
+                  ]}
+                >
                   {translateCategory(project.category)}
                 </Text>
               </View>
@@ -56,20 +72,27 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
             <View
               style={[
                 styles.statusPill,
-                isOpen ? styles.statusOpen : styles.statusClosed,
+                isOpen
+                  ? { backgroundColor: colors.surfaceLight }
+                  : { backgroundColor: 'rgba(155, 176, 165, 0.12)' },
               ]}
             >
               <Text
                 style={[
                   styles.statusText,
-                  isOpen ? styles.statusTextOpen : styles.statusTextClosed,
+                  isOpen
+                    ? { color: colors.text }
+                    : { color: colors.textSecondary },
                 ]}
               >
                 {translateStatus(project.status)}
               </Text>
             </View>
           </View>
-          <Text style={styles.projectTitle} numberOfLines={2}>
+          <Text
+            style={[styles.projectTitle, { color: colors.text }]}
+            numberOfLines={2}
+          >
             {project.title}
           </Text>
         </View>
@@ -84,7 +107,10 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
         )}
       </View>
 
-      <Text style={styles.description} numberOfLines={1}>
+      <Text
+        style={[styles.description, { color: colors.textSecondary }]}
+        numberOfLines={1}
+      >
         {project.description}
       </Text>
 
@@ -93,9 +119,9 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
           <AppVectorIcon
             name="location"
             size={13}
-            color={COLORS.textSecondary}
+            color={colors.textSecondary}
           />
-          <Text style={styles.metaText}>
+          <Text style={[styles.metaText, { color: colors.textSecondary }]}>
             {project.location ? project.location : 'عن بُعد / مرن'}
           </Text>
         </View>
@@ -105,41 +131,71 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
             <AppVectorIcon
               name="users"
               size={13}
-              color={COLORS.textSecondary}
+              color={colors.textSecondary}
             />
-            <Text style={styles.metaText}>
+            <Text style={[styles.metaText, { color: colors.textSecondary }]}>
               {project.acceptedVolunteers}/{project.maxVolunteers} متطوع
             </Text>
           </View>
         )}
 
         {skillsList.slice(0, 2).map((req) => (
-          <View key={req.skill.id} style={styles.skillChip}>
-            <Text style={styles.skillChipText}>{req.skill.name}</Text>
+          <View
+            key={req.skill.id}
+            style={[
+              styles.skillChip,
+              {
+                backgroundColor: colors.surfaceLight,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <Text style={[styles.skillChipText, { color: colors.text }]}>
+              {req.skill.name}
+            </Text>
           </View>
         ))}
       </View>
 
-      <View style={styles.footerRow}>
+      <View
+        style={[
+          styles.footerRow,
+          { borderTopColor: colors.border },
+        ]}
+      >
         {alreadyApplied ? (
-          <View style={styles.appliedBadge}>
-            <AppVectorIcon name="check" size={14} color={COLORS.primary} />
-            <Text style={styles.appliedBadgeText}>تم التقديم مسبقاً</Text>
+          <View
+            style={[
+              styles.appliedBadge,
+              {
+                backgroundColor: 'rgba(0, 186, 102, 0.12)',
+                borderColor: colors.primary,
+              },
+            ]}
+          >
+            <AppVectorIcon name="check" size={14} color={colors.primary} />
+            <Text style={[styles.appliedBadgeText, { color: colors.primary }]}>
+              تم التقديم مسبقاً
+            </Text>
           </View>
         ) : (
           <TouchableOpacity
             style={[
               styles.applyBtn,
-              (!canApply || isApplying) && styles.applyBtnDisabled,
+              { backgroundColor: colors.primary },
+              (!canApply || isApplying) && {
+                backgroundColor: colors.surfaceLight,
+                opacity: 0.65,
+              },
             ]}
             onPress={() => onApply(project.id)}
             disabled={!canApply || isApplying}
             activeOpacity={0.85}
           >
             {isApplying ? (
-              <ActivityIndicator color={COLORS.background} size="small" />
+              <ActivityIndicator color={colors.background} size="small" />
             ) : (
-              <Text style={styles.applyBtnText}>
+              <Text style={[styles.applyBtnText, { color: colors.background }]}>
                 {isFull
                   ? 'اكتمل العدد'
                   : isOpen
@@ -151,11 +207,19 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
         )}
 
         <TouchableOpacity
-          style={styles.detailsBtn}
+          style={[
+            styles.detailsBtn,
+            {
+              backgroundColor: colors.surfaceLight,
+              borderColor: colors.border,
+            },
+          ]}
           onPress={() => onPressDetails(item)}
           activeOpacity={0.85}
         >
-          <Text style={styles.detailsBtnText}>عرض التفاصيل</Text>
+          <Text style={[styles.detailsBtnText, { color: colors.text }]}>
+            عرض التفاصيل
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -164,11 +228,9 @@ export const ChanceProjectCard: React.FC<ChanceProjectCardProps> = ({
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: COLORS.surface,
     borderRadius: 18,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 10,
   },
   headerRow: {
@@ -191,10 +253,8 @@ const styles = StyleSheet.create({
   orgName: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: COLORS.primary,
   },
   categoryBadge: {
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 6,
@@ -202,12 +262,10 @@ const styles = StyleSheet.create({
   categoryBadgeText: {
     fontSize: 11,
     fontWeight: '600',
-    color: COLORS.textSecondary,
   },
   projectTitle: {
     fontSize: 17,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
     lineHeight: 23,
@@ -217,25 +275,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  statusOpen: {
-    backgroundColor: COLORS.surfaceLight,
-  },
-  statusClosed: {
-    backgroundColor: 'rgba(155, 176, 165, 0.12)',
-  },
   statusText: {
     fontSize: 10.5,
     fontWeight: '700',
   },
-  statusTextOpen: {
-    color: COLORS.text,
-  },
-  statusTextClosed: {
-    color: COLORS.textSecondary,
-  },
   description: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -253,20 +298,16 @@ const styles = StyleSheet.create({
   },
   metaText: {
     fontSize: 12,
-    color: COLORS.textSecondary,
     fontWeight: '600',
     writingDirection: 'rtl',
   },
   skillChip: {
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 8,
   },
   skillChipText: {
-    color: COLORS.text,
     fontSize: 11.5,
     fontWeight: '600',
   },
@@ -275,22 +316,15 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 10,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   applyBtn: {
     flex: 1.3,
-    backgroundColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  applyBtnDisabled: {
-    backgroundColor: COLORS.surfaceLight,
-    opacity: 0.65,
-  },
   applyBtnText: {
-    color: COLORS.background,
     fontSize: 14,
     fontWeight: '800',
   },
@@ -298,31 +332,25 @@ const styles = StyleSheet.create({
     flex: 1.3,
     flexDirection: 'row-reverse',
     gap: 6,
-    backgroundColor: 'rgba(0, 186, 102, 0.12)',
     borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   appliedBadgeText: {
-    color: COLORS.primary,
     fontSize: 13.5,
     fontWeight: '800',
   },
   detailsBtn: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 12,
     paddingVertical: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   detailsBtnText: {
-    color: COLORS.text,
     fontSize: 13.5,
     fontWeight: '700',
   },

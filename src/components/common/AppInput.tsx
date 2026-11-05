@@ -1,37 +1,56 @@
 import React from 'react';
 import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AppInputProps extends TextInputProps {
   label: string;
 }
 
-export const AppInput: React.FC<AppInputProps> = ({ label, style, ...rest }) => (
-  <View style={styles.fieldGroup}>
-    <Text style={styles.label}>{label}</Text>
-    <TextInput
-      style={[styles.input, style]}
-      placeholderTextColor={COLORS.textSecondary}
-      {...rest}
-    />
-  </View>
-);
+export const AppInput: React.FC<AppInputProps> = ({ label, style, ...rest }) => {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.fieldGroup}>
+      <Text
+        style={{
+          fontSize: 13.5,
+          fontWeight: '700',
+          color: colors.text,
+          textAlign: 'right',
+          writingDirection: 'rtl',
+        }}
+      >
+        {label}
+      </Text>
+      <TextInput
+        style={[
+          styles.inputBase,
+          {
+            backgroundColor: colors.surface,
+            borderColor: colors.border,
+            color: colors.text,
+          },
+          style,
+        ]}
+        placeholderTextColor={colors.textSecondary}
+        textAlign="right"
+        {...rest}
+      />
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
-  fieldGroup: { gap: 6 },
-  label: {
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: COLORS.text,
+  fieldGroup: {
+    gap: 6,
+    alignItems: 'flex-end',
   },
-  input: {
-    backgroundColor: COLORS.surface,
+  inputBase: {
+    width: '100%',
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 13,
     fontSize: 15,
-    color: COLORS.text,
+    writingDirection: 'rtl',
   },
 });

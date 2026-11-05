@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { RecommendedProject } from '../../types/volunteer-home.types';
 import { MatchDonutChart } from '../common/MatchDonutChart';
 import { AppVectorIcon } from '../common/AppVectorIcon';
@@ -22,37 +22,38 @@ export interface SkillMatchedChancesSectionProps {
 export const SkillMatchedChancesSection: React.FC<
   SkillMatchedChancesSectionProps
 > = ({ items, onApply, onPressDetails, applyingId, onPressExploreAll }) => {
+  const { colors } = useTheme();
   const safeItems = Array.isArray(items) ? items : [];
 
   return (
     <View style={styles.section}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>فرص تطابق مهاراتك</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>فرص تطابق مهاراتك</Text>
         {onPressExploreAll && (
           <TouchableOpacity
             style={styles.viewAllBtn}
             onPress={onPressExploreAll}
             activeOpacity={0.8}
           >
-            <Text style={styles.viewAllLink}>عرض كل الفرص</Text>
-            <AppVectorIcon name="arrow-left" size={13} color={COLORS.primary} />
+            <Text style={[styles.viewAllLink, { color: colors.primary }]}>عرض كل الفرص</Text>
+            <AppVectorIcon name="arrow-left" size={13} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>
 
       {safeItems.length === 0 ? (
-        <View style={styles.emptyBox}>
-          <Text style={styles.emptyText}>
+        <View style={[styles.emptyBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
             لا توجد فرص إضافية مطابقة حالياً. يمكنك تصفح جميع الفرص المتاحة
             والبحث فيها مباشرة.
           </Text>
           {onPressExploreAll && (
             <TouchableOpacity
-              style={styles.exploreAllBtn}
+              style={[styles.exploreAllBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.primary }]}
               onPress={onPressExploreAll}
             >
-              <AppVectorIcon name="search" size={15} color={COLORS.primary} />
-              <Text style={styles.exploreAllBtnText}>
+              <AppVectorIcon name="search" size={15} color={colors.primary} />
+              <Text style={[styles.exploreAllBtnText, { color: colors.primary }]}>
                 تصفح جميع الفرص التطوعية
               </Text>
             </TouchableOpacity>
@@ -68,13 +69,13 @@ export const SkillMatchedChancesSection: React.FC<
               : [];
 
             return (
-              <View key={project.id} style={styles.card}>
+              <View key={project.id} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                 <View style={styles.cardHeader}>
                   <View style={styles.titleCol}>
-                    <Text style={styles.orgName}>
+                    <Text style={[styles.orgName, { color: colors.primary }]}>
                       {project.organization?.name ?? 'جمعية'}
                     </Text>
-                    <Text style={styles.projectTitle} numberOfLines={2}>
+                    <Text style={[styles.projectTitle, { color: colors.text }]} numberOfLines={2}>
                       {project.title}
                     </Text>
                   </View>
@@ -87,18 +88,18 @@ export const SkillMatchedChancesSection: React.FC<
                   />
                 </View>
 
-                <Text style={styles.description} numberOfLines={1}>
+                <Text style={[styles.description, { color: colors.textSecondary }]} numberOfLines={1}>
                   {project.description}
                 </Text>
 
                 <View style={styles.skillsRow}>
-                  <View style={styles.locationChip}>
+                  <View style={[styles.locationChip, { backgroundColor: colors.surfaceLight }]}>
                     <AppVectorIcon
                       name="location"
                       size={12}
-                      color={COLORS.textSecondary}
+                      color={colors.textSecondary}
                     />
-                    <Text style={styles.locationChipText}>
+                    <Text style={[styles.locationChipText, { color: colors.textSecondary }]}>
                       {project.location ? project.location : 'عن بُعد'}
                     </Text>
                   </View>
@@ -107,17 +108,18 @@ export const SkillMatchedChancesSection: React.FC<
                       <AppVectorIcon
                         name="check"
                         size={11}
-                        color={COLORS.primary}
+                        color={colors.primary}
                       />
-                      <Text style={styles.matchedChipText}>{s.name}</Text>
+                      <Text style={[styles.matchedChipText, { color: colors.primary }]}>{s.name}</Text>
                     </View>
                   ))}
                 </View>
 
-                <View style={styles.cardFooter}>
+                <View style={[styles.cardFooter, { borderTopColor: colors.border }]}>
                   <TouchableOpacity
                     style={[
                       styles.smallApplyBtn,
+                      { backgroundColor: colors.primary },
                       isApplying && styles.smallApplyBtnDisabled,
                     ]}
                     onPress={() => onApply(project.id)}
@@ -125,20 +127,20 @@ export const SkillMatchedChancesSection: React.FC<
                   >
                     {isApplying ? (
                       <ActivityIndicator
-                        color={COLORS.background}
+                        color={colors.background}
                         size="small"
                       />
                     ) : (
-                      <Text style={styles.smallApplyText}>تقديم</Text>
+                      <Text style={[styles.smallApplyText, { color: colors.background }]}>تقديم</Text>
                     )}
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    style={styles.detailsBtn}
+                    style={[styles.detailsBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}
                     onPress={() => onPressDetails(recItem)}
                     activeOpacity={0.8}
                   >
-                    <Text style={styles.detailsBtnText}>عرض التفاصيل</Text>
+                    <Text style={[styles.detailsBtnText, { color: colors.text }]}>عرض التفاصيل</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -147,12 +149,12 @@ export const SkillMatchedChancesSection: React.FC<
 
           {onPressExploreAll && (
             <TouchableOpacity
-              style={styles.exploreAllBtn}
+              style={[styles.exploreAllBtn, { backgroundColor: colors.surfaceLight, borderColor: colors.primary }]}
               onPress={onPressExploreAll}
               activeOpacity={0.85}
             >
-              <AppVectorIcon name="search" size={16} color={COLORS.primary} />
-              <Text style={styles.exploreAllBtnText}>
+              <AppVectorIcon name="search" size={16} color={colors.primary} />
+              <Text style={[styles.exploreAllBtnText, { color: colors.primary }]}>
                 استكشف وابحث في جميع الفرص التطوعية
               </Text>
             </TouchableOpacity>
@@ -176,7 +178,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -188,17 +189,14 @@ const styles = StyleSheet.create({
   viewAllLink: {
     fontSize: 13.5,
     fontWeight: '700',
-    color: COLORS.primary,
   },
   list: {
     gap: 14,
   },
   card: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: COLORS.border,
     gap: 10,
   },
   cardHeader: {
@@ -215,19 +213,16 @@ const styles = StyleSheet.create({
   orgName: {
     fontSize: 12,
     fontWeight: '700',
-    color: COLORS.primary,
     textAlign: 'right',
   },
   projectTitle: {
     fontSize: 16.5,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   description: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
@@ -240,13 +235,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: COLORS.surfaceLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
   locationChipText: {
-    color: COLORS.textSecondary,
     fontSize: 11.5,
     fontWeight: '600',
   },
@@ -260,7 +253,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   matchedChipText: {
-    color: COLORS.primary,
     fontSize: 11.5,
     fontWeight: '700',
   },
@@ -269,11 +261,9 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingTop: 8,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
   },
   smallApplyBtn: {
     flex: 1.2,
-    backgroundColor: COLORS.primary,
     paddingVertical: 9,
     borderRadius: 10,
     alignItems: 'center',
@@ -283,36 +273,29 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   smallApplyText: {
-    color: COLORS.background,
     fontSize: 13.5,
     fontWeight: '800',
   },
   detailsBtn: {
     flex: 1,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingVertical: 9,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },
   detailsBtnText: {
-    color: COLORS.text,
     fontSize: 13,
     fontWeight: '700',
   },
   emptyBox: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 18,
     borderWidth: 1,
-    borderColor: COLORS.border,
     alignItems: 'flex-end',
     gap: 12,
   },
   emptyText: {
-    color: COLORS.textSecondary,
     fontSize: 13.5,
     lineHeight: 20,
     textAlign: 'right',
@@ -324,15 +307,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: COLORS.surfaceLight,
     borderWidth: 1,
-    borderColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 14,
     marginTop: 4,
   },
   exploreAllBtnText: {
-    color: COLORS.primary,
     fontSize: 14.5,
     fontWeight: '800',
   },

@@ -20,15 +20,14 @@ export const WelcomeContainer: React.FC = () => {
   };
 
   return (
-    
-    <ScreenLayout scrollable={false} contentStyle={styles.layout}>
+    <ScreenLayout scrollable contentStyle={styles.layout}>
       <BrandHero />
       <FeatureList />
       <View>
         <RoleEntryButtons onSelectRole={handleSelectRole} />
         <AuthSwitchLink
-          promptText="Already have an account?"
-          actionText="Sign In"
+          promptText="لديك حساب بالفعل؟"
+          actionText="تسجيل الدخول"
           onPress={() => navigation.navigate('Login')}
         />
       </View>
@@ -37,5 +36,8 @@ export const WelcomeContainer: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
-  layout: { justifyContent: 'space-between' },
+  layout: {
+    justifyContent: 'space-between',
+    gap: 20,
+  },
 });

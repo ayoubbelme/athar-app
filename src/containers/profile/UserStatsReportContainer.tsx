@@ -5,7 +5,6 @@ import {
   RefreshControl,
   ScrollView,
   StatusBar,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -15,11 +14,12 @@ import { useNavigation } from '@react-navigation/native';
 import { profileApi } from '../../api/profile.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { UserProfileStats } from '../../types/profile.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { UserStatsReportSection } from '../../components/profile/UserStatsReportSection';
 
 export const UserStatsReportContainer: React.FC = () => {
+  const { colors } = useTheme();
   const navigation = useNavigation();
   const [stats, setStats] = useState<UserProfileStats>({
     volunteerScore: 350,
@@ -53,50 +53,102 @@ export const UserStatsReportContainer: React.FC = () => {
 
   return (
     <SafeAreaView
-      style={styles.container}
+      style={{ flex: 1, backgroundColor: colors.background }}
       edges={['top', 'bottom', 'left', 'right']}
     >
       <StatusBar barStyle="light-content" />
 
       {/* Top Navigation Bar */}
-      <View style={styles.topNav}>
+      <View
+        style={{
+          flexDirection: 'row-reverse',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingHorizontal: 20,
+          paddingVertical: 12,
+          borderBottomWidth: 1,
+          borderBottomColor: colors.border,
+          backgroundColor: colors.surface,
+        }}
+      >
         <TouchableOpacity
-          style={styles.backBtn}
+          style={{
+            backgroundColor: colors.surfaceLight,
+            paddingHorizontal: 14,
+            paddingVertical: 7,
+            borderRadius: 10,
+            borderWidth: 1,
+            borderColor: colors.border,
+          }}
           onPress={() => navigation.goBack()}
           activeOpacity={0.8}
         >
-          <Text style={styles.backBtnText}>→ رجوع</Text>
+          <Text style={{ color: colors.text, fontSize: 13.5, fontWeight: '700' }}>→ رجوع</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>تقرير وإحصائيات المتطوع</Text>
-        <View style={styles.navSpacer} />
+        <Text style={{ fontSize: 16.5, fontWeight: '800', color: colors.text }}>
+          تقرير وإحصائيات المتطوع
+        </Text>
+        <View style={{ width: 68 }} />
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={{ padding: 20, gap: 20, paddingBottom: 36 }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => loadStats(true)}
-            tintColor={COLORS.primary}
-            colors={[COLORS.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
       >
         <ErrorBanner message={errorMsg} />
 
         {loading ? (
-          <View style={styles.loaderBox}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
+          <View style={{ paddingVertical: 80, alignItems: 'center', justifyContent: 'center' }}>
+            <ActivityIndicator size="large" color={colors.primary} />
           </View>
         ) : (
-          <View style={styles.stack}>
+          <View style={{ gap: 22 }}>
             {/* Rank & Total Impact Card */}
-            <View style={styles.summaryCard}>
-              <Text style={styles.rankBadge}>{stats.rankTitle}</Text>
-              <Text style={styles.scoreTitle}>
+            <View
+              style={{
+                backgroundColor: colors.surface,
+                borderRadius: 20,
+                padding: 20,
+                borderWidth: 1.5,
+                borderColor: colors.primary,
+                alignItems: 'flex-end',
+                gap: 8,
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: '800',
+                  color: colors.primary,
+                  backgroundColor: 'rgba(0, 186, 102, 0.14)',
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  borderRadius: 10,
+                }}
+              >
+                {stats.rankTitle}
+              </Text>
+              <Text
+                style={{ fontSize: 20, fontWeight: '900', color: colors.text, textAlign: 'right' }}
+              >
                 إجمالي نقاط الأثر: {stats.volunteerScore} نقطة ⭐
               </Text>
-              <Text style={styles.summaryDesc}>
+              <Text
+                style={{
+                  fontSize: 13.5,
+                  color: colors.textSecondary,
+                  lineHeight: 20,
+                  textAlign: 'right',
+                  writingDirection: 'rtl',
+                }}
+              >
                 يعكس هذا التقرير مساهماتك التطوعية الفعالة والتزامك بالمبادرات
                 المجتمعية المسجلة على منصة أثر.
               </Text>
@@ -110,85 +162,3 @@ export const UserStatsReportContainer: React.FC = () => {
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  topNav: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-    backgroundColor: COLORS.surface,
-  },
-  backBtn: {
-    backgroundColor: COLORS.surfaceLight,
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-  },
-  backBtnText: {
-    color: COLORS.text,
-    fontSize: 13.5,
-    fontWeight: '700',
-  },
-  navTitle: {
-    fontSize: 16.5,
-    fontWeight: '800',
-    color: COLORS.text,
-  },
-  navSpacer: {
-    width: 68,
-  },
-  scrollContent: {
-    padding: 20,
-    gap: 20,
-    paddingBottom: 36,
-  },
-  loaderBox: {
-    paddingVertical: 80,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stack: {
-    gap: 22,
-  },
-  summaryCard: {
-    backgroundColor: COLORS.surface,
-    borderRadius: 20,
-    padding: 20,
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  rankBadge: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: COLORS.primary,
-    backgroundColor: 'rgba(0, 186, 102, 0.14)',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  scoreTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: COLORS.text,
-    textAlign: 'right',
-  },
-  summaryDesc: {
-    fontSize: 13.5,
-    color: COLORS.textSecondary,
-    lineHeight: 20,
-    textAlign: 'right',
-    writingDirection: 'rtl',
-  },
-});

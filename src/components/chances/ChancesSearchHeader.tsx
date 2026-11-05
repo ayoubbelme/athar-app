@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { AppVectorIcon } from '../common/AppVectorIcon';
 
 interface ChancesSearchHeaderProps {
@@ -30,125 +30,161 @@ export const ChancesSearchHeader: React.FC<ChancesSearchHeaderProps> = ({
   onToggleAdvancedFilters,
   activeFilterCount,
   onClearAllFilters,
-}) => (
-  <View style={styles.wrapper}>
-    <View style={styles.topRow}>
-      <View style={styles.titleCol}>
-        <Text style={styles.title}>جميع الفرص التطوعية</Text>
-        <Text style={styles.subtitle}>
-          ابحث وصفِّ الفرص حسب المجال، المهارة، أو الولاية
-        </Text>
-      </View>
-    </View>
+}) => {
+  const { colors } = useTheme();
 
-    <View style={styles.searchRow}>
-      <View style={styles.searchInputContainer}>
-        <View style={styles.iconSpacer}>
-          <AppVectorIcon
-            name="search"
-            size={16}
-            color={COLORS.textSecondary}
-          />
+  return (
+    <View
+      style={[
+        styles.wrapper,
+        { backgroundColor: colors.background },
+      ]}
+    >
+      <View style={styles.topRow}>
+        <View style={styles.titleCol}>
+          <Text style={[styles.title, { color: colors.text }]}>
+            جميع الفرص التطوعية
+          </Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+            ابحث وصفِّ الفرص حسب المجال، المهارة، أو الولاية
+          </Text>
         </View>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="ابحث بعنوان الفرصة أو الوصف..."
-          placeholderTextColor={COLORS.textSecondary}
-          value={searchQuery}
-          onChangeText={onChangeSearch}
-          textAlign="right"
-        />
-        {searchQuery.length > 0 && (
-          <TouchableOpacity
-            onPress={() => onChangeSearch('')}
-            style={styles.clearBtn}
-          >
-            <AppVectorIcon
-              name="close"
-              size={13}
-              color={COLORS.textSecondary}
-            />
-          </TouchableOpacity>
-        )}
       </View>
 
-      <TouchableOpacity
-        style={[
-          styles.filterToggleBtn,
-          (showAdvancedFilters || activeFilterCount > 0) &&
-            styles.filterToggleBtnActive,
-        ]}
-        onPress={onToggleAdvancedFilters}
-        activeOpacity={0.85}
-      >
-        <AppVectorIcon
-          name="filter"
-          size={15}
-          color={
-            showAdvancedFilters || activeFilterCount > 0
-              ? COLORS.primary
-              : COLORS.text
-          }
-        />
-        <Text
+      <View style={styles.searchRow}>
+        <View
           style={[
-            styles.filterToggleText,
-            (showAdvancedFilters || activeFilterCount > 0) &&
-              styles.filterToggleTextActive,
+            styles.searchInputContainer,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
           ]}
         >
-          تصفية {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
-        </Text>
-      </TouchableOpacity>
-    </View>
-
-    {showAdvancedFilters && (
-      <View style={styles.advancedBox}>
-        <View style={styles.locationInputWrapper}>
           <View style={styles.iconSpacer}>
-            <AppVectorIcon name="location" size={15} color={COLORS.primary} />
+            <AppVectorIcon
+              name="search"
+              size={16}
+              color={colors.textSecondary}
+            />
           </View>
           <TextInput
-            style={styles.locationInput}
-            placeholder="تصفية حسب المدينة / الولاية (مثال: Algiers)..."
-            placeholderTextColor={COLORS.textSecondary}
-            value={locationQuery}
-            onChangeText={onChangeLocation}
+            style={[styles.searchInput, { color: colors.text }]}
+            placeholder="ابحث بعنوان الفرصة أو الوصف..."
+            placeholderTextColor={colors.textSecondary}
+            value={searchQuery}
+            onChangeText={onChangeSearch}
             textAlign="right"
           />
-          {locationQuery.length > 0 && (
+          {searchQuery.length > 0 && (
             <TouchableOpacity
-              onPress={() => onChangeLocation('')}
+              onPress={() => onChangeSearch('')}
               style={styles.clearBtn}
             >
               <AppVectorIcon
                 name="close"
                 size={13}
-                color={COLORS.textSecondary}
+                color={colors.textSecondary}
               />
             </TouchableOpacity>
           )}
         </View>
 
-        {activeFilterCount > 0 && (
-          <TouchableOpacity
-            style={styles.resetFiltersBtn}
-            onPress={onClearAllFilters}
+        <TouchableOpacity
+          style={[
+            styles.filterToggleBtn,
+            {
+              backgroundColor: colors.surface,
+              borderColor: colors.border,
+            },
+            (showAdvancedFilters || activeFilterCount > 0) && {
+              backgroundColor: 'rgba(0, 186, 102, 0.16)',
+              borderColor: colors.primary,
+            },
+          ]}
+          onPress={onToggleAdvancedFilters}
+          activeOpacity={0.85}
+        >
+          <AppVectorIcon
+            name="filter"
+            size={15}
+            color={
+              showAdvancedFilters || activeFilterCount > 0
+                ? colors.primary
+                : colors.text
+            }
+          />
+          <Text
+            style={[
+              styles.filterToggleText,
+              { color: colors.text },
+              (showAdvancedFilters || activeFilterCount > 0) && {
+                color: colors.primary,
+              },
+            ]}
           >
-            <Text style={styles.resetFiltersText}>إعادة تعيين جميع الفلاتر</Text>
-          </TouchableOpacity>
-        )}
+            تصفية {activeFilterCount > 0 ? `(${activeFilterCount})` : ''}
+          </Text>
+        </TouchableOpacity>
       </View>
-    )}
-  </View>
-);
+
+      {showAdvancedFilters && (
+        <View style={styles.advancedBox}>
+          <View
+            style={[
+              styles.locationInputWrapper,
+              {
+                backgroundColor: colors.surface,
+                borderColor: colors.border,
+              },
+            ]}
+          >
+            <View style={styles.iconSpacer}>
+              <AppVectorIcon name="location" size={15} color={colors.primary} />
+            </View>
+            <TextInput
+              style={[styles.locationInput, { color: colors.text }]}
+              placeholder="تصفية حسب المدينة / الولاية (مثال: Algiers)..."
+              placeholderTextColor={colors.textSecondary}
+              value={locationQuery}
+              onChangeText={onChangeLocation}
+              textAlign="right"
+            />
+            {locationQuery.length > 0 && (
+              <TouchableOpacity
+                onPress={() => onChangeLocation('')}
+                style={styles.clearBtn}
+              >
+                <AppVectorIcon
+                  name="close"
+                  size={13}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {activeFilterCount > 0 && (
+            <TouchableOpacity
+              style={styles.resetFiltersBtn}
+              onPress={onClearAllFilters}
+            >
+              <Text style={[styles.resetFiltersText, { color: colors.error }]}>
+                إعادة تعيين جميع الفلاتر
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      )}
+    </View>
+  );
+};
 
 const styles = StyleSheet.create({
   wrapper: {
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 10,
-    backgroundColor: COLORS.background,
     gap: 12,
   },
   topRow: {
@@ -163,13 +199,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   subtitle: {
     fontSize: 13,
-    color: COLORS.textSecondary,
     marginTop: 2,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -183,9 +217,7 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 14,
     paddingHorizontal: 12,
   },
@@ -196,7 +228,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 14.5,
-    color: COLORS.text,
     writingDirection: 'rtl',
   },
   clearBtn: {
@@ -207,25 +238,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 12,
     justifyContent: 'center',
   },
-  filterToggleBtnActive: {
-    backgroundColor: 'rgba(0, 186, 102, 0.16)',
-    borderColor: COLORS.primary,
-  },
   filterToggleText: {
-    color: COLORS.text,
     fontSize: 13.5,
     fontWeight: '700',
-  },
-  filterToggleTextActive: {
-    color: COLORS.primary,
   },
   advancedBox: {
     gap: 8,
@@ -233,9 +254,7 @@ const styles = StyleSheet.create({
   locationInputWrapper: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    backgroundColor: COLORS.surface,
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: 12,
     paddingHorizontal: 12,
   },
@@ -243,7 +262,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     fontSize: 13.5,
-    color: COLORS.text,
     writingDirection: 'rtl',
   },
   resetFiltersBtn: {
@@ -252,7 +270,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   resetFiltersText: {
-    color: COLORS.error,
     fontSize: 12.5,
     fontWeight: '700',
   },

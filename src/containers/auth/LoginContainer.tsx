@@ -30,7 +30,7 @@ export const LoginContainer: React.FC = () => {
     const trimmedEmail = email.trim();
 
     if (!trimmedEmail || !password) {
-      setErrorMsg('Please enter both your email and password.');
+      setErrorMsg('يرجى إدخال البريد الإلكتروني وكلمة المرور.');
       return;
     }
 
@@ -61,15 +61,15 @@ export const LoginContainer: React.FC = () => {
       contentStyle={styles.centered}
     >
       <AuthHeader
-        title="Welcome Back"
-        subtitle="Sign in to continue making an impact with ATHAR."
+        title="مرحباً بعودتك"
+        subtitle="سجّل دخولك لمواصلة صناعة الأثر المجتمعي عبر منصة أثر."
       />
 
       <ErrorBanner message={errorMsg} />
 
       <View style={styles.form}>
         <AppInput
-          label="Email Address"
+          label="البريد الإلكتروني"
           placeholder="amina@example.com"
           value={email}
           onChangeText={setEmail}
@@ -79,20 +79,24 @@ export const LoginContainer: React.FC = () => {
         />
 
         <PasswordInput
-          label="Password"
-          placeholder="Enter your password"
+          label="كلمة المرور"
+          placeholder="أدخل كلمة المرور الخاصة بك"
           value={password}
           onChangeText={setPassword}
         />
 
-        <AppButton title="Sign In" onPress={handleLogin} loading={loading} />
+        <AppButton
+          title="تسجيل الدخول"
+          onPress={handleLogin}
+          loading={loading}
+        />
       </View>
 
       <DemoCredentialsBox onSelectDemo={handleFillDemo} />
 
       <AuthSwitchLink
-        promptText="Don't have an account?"
-        actionText="Create Account"
+        promptText="ليس لديك حساب بعد؟"
+        actionText="إنشاء حساب جديد"
         onPress={() => navigation.navigate('SignUp')}
       />
     </ScreenLayout>

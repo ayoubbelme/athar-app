@@ -15,7 +15,7 @@ import { volunteerHomeApi } from '../../api/volunteer-home.api';
 import { extractErrorMessage } from '../../utils/error.util';
 import { ProjectCategory } from '../../types/volunteer-home.types';
 import { ChanceCardViewModel, SkillOption } from '../../types/chances.types';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { ChancesListSkeleton } from '../../components/common/AppSkeleton';
 import { ChancesSearchHeader } from '../../components/chances/ChancesSearchHeader';
@@ -25,6 +25,7 @@ import { ChanceProjectCard } from '../../components/chances/ChanceProjectCard';
 export const ChancesContainer: React.FC<{
   initialCategory?: ProjectCategory;
 }> = ({ initialCategory }) => {
+  const { colors } = useTheme();
   const navigation = useNavigation<any>();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,7 +171,10 @@ export const ChancesContainer: React.FC<{
     (onlyOpenStatus ? 1 : 0);
 
   return (
-    <SafeAreaView style={styles.container} edges={['left', 'right']}>
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['left', 'right']}
+    >
       <StatusBar barStyle="light-content" />
 
       <ChancesSearchHeader
@@ -197,7 +201,7 @@ export const ChancesContainer: React.FC<{
       />
 
       <View style={styles.resultsBar}>
-        <Text style={styles.resultsCountText}>
+        <Text style={[styles.resultsCountText, { color: colors.textSecondary }]}>
           عدد النتائج: {totalCount} فرصة تطوعية
         </Text>
       </View>
@@ -225,16 +229,26 @@ export const ChancesContainer: React.FC<{
             <RefreshControl
               refreshing={refreshing}
               onRefresh={() => fetchChances(true)}
-              tintColor={COLORS.primary}
-              colors={[COLORS.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           ListEmptyComponent={
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyTitle}>
+            <View
+              style={[
+                styles.emptyBox,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: colors.border,
+                },
+              ]}
+            >
+              <Text style={[styles.emptyTitle, { color: colors.text }]}>
                 لا توجد فرص تطابق بحثك الحالي
               </Text>
-              <Text style={styles.emptySubtitle}>
+              <Text
+                style={[styles.emptySubtitle, { color: colors.textSecondary }]}
+              >
                 جرّب تغيير كلمات البحث أو إزالة بعض الفلاتر لعرض جميع المشاريع.
               </Text>
             </View>
@@ -248,7 +262,6 @@ export const ChancesContainer: React.FC<{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
   },
   resultsBar: {
     paddingHorizontal: 20,
@@ -259,7 +272,6 @@ const styles = StyleSheet.create({
   resultsCountText: {
     fontSize: 12.5,
     fontWeight: '700',
-    color: COLORS.textSecondary,
     writingDirection: 'rtl',
   },
   errorWrapper: {
@@ -272,11 +284,9 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   emptyBox: {
-    backgroundColor: COLORS.surface,
     borderRadius: 16,
     padding: 24,
     borderWidth: 1,
-    borderColor: COLORS.border,
     alignItems: 'center',
     marginTop: 24,
     gap: 6,
@@ -284,12 +294,10 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: COLORS.text,
     textAlign: 'center',
   },
   emptySubtitle: {
     fontSize: 13.5,
-    color: COLORS.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },

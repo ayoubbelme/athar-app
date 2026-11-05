@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 import { AppVectorIcon } from '../common/AppVectorIcon';
 
 interface HomeTopHeaderProps {
@@ -15,6 +15,8 @@ export const HomeTopHeader: React.FC<HomeTopHeaderProps> = ({
   title,
   subtitle,
 }) => {
+  const { colors } = useTheme();
+
   const initials = (userName || 'متطوع')
     .trim()
     .split(' ')
@@ -24,39 +26,39 @@ export const HomeTopHeader: React.FC<HomeTopHeaderProps> = ({
     .toUpperCase();
 
   return (
-    <View style={styles.heroBanner}>
+    <View style={[styles.heroBanner, { backgroundColor: colors.surface, borderColor: colors.primary }]}>
       <View style={styles.glowCircleTopLeft} />
       <View style={styles.glowCircleBottomRight} />
 
       <View style={styles.topRow}>
         <View style={styles.avatarContainer}>
-          <View style={styles.avatarRing}>
-            <Text style={styles.avatarText}>{initials || 'أ'}</Text>
+          <View style={[styles.avatarRing, { borderColor: colors.primary }]}>
+            <Text style={[styles.avatarText, { color: colors.primary }]}>{initials || 'أ'}</Text>
           </View>
-          <View style={styles.onlineStatusBadge} />
+          <View style={[styles.onlineStatusBadge, { backgroundColor: colors.primary, borderColor: colors.surface }]} />
         </View>
 
         <View style={styles.greetingCol}>
           <View style={styles.welcomeTag}>
-            <AppVectorIcon name="sparkle" size={12} color={COLORS.primary} />
-            <Text style={styles.welcomeTagText}>معاً نصنع الأثر</Text>
+            <AppVectorIcon name="sparkle" size={12} color={colors.primary} />
+            <Text style={[styles.welcomeTagText, { color: colors.primary }]}>معاً نصنع الأثر</Text>
           </View>
-          <Text style={styles.title}>{title.replace(/👋/g, '').trim()}</Text>
+          <Text style={[styles.title, { color: colors.text }]}>{title.replace(/👋/g, '').trim()}</Text>
         </View>
       </View>
 
-      <View style={styles.subtitleBox}>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+      <View style={[styles.subtitleBox, { backgroundColor: colors.surfaceLight, borderColor: colors.border }]}>
+        <Text style={[styles.subtitle, { color: colors.textSecondary }]}>{subtitle}</Text>
       </View>
 
       <View style={styles.pillsRow}>
-        <View style={styles.featurePill}>
-          <AppVectorIcon name="target" size={13} color={COLORS.primary} />
-          <Text style={styles.featurePillText}>مطابقة ذكية للمهارات</Text>
+        <View style={[styles.featurePill, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <AppVectorIcon name="target" size={13} color={colors.primary} />
+          <Text style={[styles.featurePillText, { color: colors.text }]}>مطابقة ذكية للمهارات</Text>
         </View>
-        <View style={styles.featurePill}>
-          <AppVectorIcon name="check" size={13} color={COLORS.primary} />
-          <Text style={styles.featurePillText}>توثيق معتمد للساعات</Text>
+        <View style={[styles.featurePill, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          <AppVectorIcon name="check" size={13} color={colors.primary} />
+          <Text style={[styles.featurePillText, { color: colors.text }]}>توثيق معتمد للساعات</Text>
         </View>
       </View>
     </View>
@@ -67,12 +69,10 @@ const styles = StyleSheet.create({
   heroBanner: {
     position: 'relative',
     overflow: 'hidden',
-    backgroundColor: COLORS.surface,
     borderRadius: 24,
     padding: 20,
     marginBottom: 22,
     borderWidth: 1.5,
-    borderColor: COLORS.primary,
     gap: 14,
   },
   glowCircleTopLeft: {
@@ -107,14 +107,12 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(0, 186, 102, 0.16)',
     borderWidth: 2,
-    borderColor: COLORS.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarText: {
     fontSize: 20,
     fontWeight: '900',
-    color: COLORS.primary,
   },
   onlineStatusBadge: {
     position: 'absolute',
@@ -123,9 +121,7 @@ const styles = StyleSheet.create({
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: COLORS.primary,
     borderWidth: 2.5,
-    borderColor: COLORS.surface,
   },
   greetingCol: {
     flex: 1,
@@ -146,26 +142,21 @@ const styles = StyleSheet.create({
   welcomeTagText: {
     fontSize: 11,
     fontWeight: '800',
-    color: COLORS.primary,
   },
   title: {
     fontSize: 21,
     fontWeight: '900',
-    color: COLORS.text,
     textAlign: 'right',
     writingDirection: 'rtl',
   },
   subtitleBox: {
-    backgroundColor: COLORS.surfaceLight,
     borderRadius: 14,
     paddingHorizontal: 14,
     paddingVertical: 11,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   subtitle: {
     fontSize: 13.5,
-    color: COLORS.textSecondary,
     lineHeight: 20,
     textAlign: 'right',
     writingDirection: 'rtl',
@@ -179,9 +170,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: COLORS.background,
     borderWidth: 1,
-    borderColor: COLORS.border,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 10,
@@ -189,6 +178,5 @@ const styles = StyleSheet.create({
   featurePillText: {
     fontSize: 11.5,
     fontWeight: '700',
-    color: COLORS.text,
   },
 });

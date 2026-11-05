@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   ViewStyle,
 } from 'react-native';
-import { COLORS } from '../../theme/colors';
+import { useTheme } from '../../context/ThemeContext';
 
 interface AppButtonProps {
   title: string;
@@ -23,19 +23,25 @@ export const AppButton: React.FC<AppButtonProps> = ({
   disabled = false,
   style,
 }) => {
+  const { colors } = useTheme();
   const isDisabled = loading || disabled;
 
   return (
     <TouchableOpacity
-      style={[styles.btn, isDisabled && styles.btnDisabled, style]}
+      style={[
+        styles.btn,
+        { backgroundColor: colors.primary },
+        isDisabled && styles.btnDisabled,
+        style,
+      ]}
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.85}
     >
       {loading ? (
-        <ActivityIndicator color={COLORS.background} />
+        <ActivityIndicator color={colors.background} />
       ) : (
-        <Text style={styles.btnText}>{title}</Text>
+        <Text style={[styles.btnText, { color: colors.background }]}>{title}</Text>
       )}
     </TouchableOpacity>
   );
@@ -43,7 +49,6 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
 const styles = StyleSheet.create({
   btn: {
-    backgroundColor: COLORS.primary,
     borderRadius: 14,
     paddingVertical: 16,
     alignItems: 'center',
@@ -51,7 +56,6 @@ const styles = StyleSheet.create({
   },
   btnDisabled: { opacity: 0.6 },
   btnText: {
-    color: COLORS.background,
     fontSize: 16,
     fontWeight: '800',
   },
